@@ -20,10 +20,19 @@ contract SafeMath {
 }
 
 
+contract C20Interface {
+  function balanceOf(address _owner) constant returns (uint);
+  //function verifyParticipant(address participant) external;
+}
+
+
 /// @title C20 liquidation contract
 /// @author Tom McCarthy
 /// @notice Liquidates C20 tokens held by participants in the Cryto20 fund
 contract Liquidation is SafeMath {
+    // Address of C20 contract on ethereum
+    address C20InterfaceAddress = 0xab38...
+    C20Interface c20Contract = C20Interface(C20InterfaceAddress);
 
     // PUBLIC VARIABLES:
     /// @dev Managing wallets from C20 contract
@@ -105,7 +114,7 @@ contract Liquidation is SafeMath {
     /// @notice Gets C20 token balance of participant from C20 contract
     function balanceOf(address _participant) view returns (uint balance) {
         // TODO: Get balance from balanceOf function in C20 contract
-        return balances[_participant];
+        return c20Contract.balanceOf(_participant);
     }
 
     /// @notice Allows user to request a certain amount of tokens to liquidate
@@ -187,5 +196,4 @@ contract Liquidation is SafeMath {
     function unhalt() external {
         halted = false;
     }
-
 }
