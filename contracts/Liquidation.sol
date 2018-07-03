@@ -32,7 +32,7 @@ contract C20Interface {
 /// @notice Liquidates C20 tokens held by participants in the Cryto20 fund
 contract Liquidation is SafeMath {
     // Address of C20 contract on ethereum
-    address C20InterfaceAddress = 0x26E75307Fc0C021472fEb8F727839531F112f317
+    address C20InterfaceAddress = 0x26E75307Fc0C021472fEb8F727839531F112f317;
     C20Interface c20Contract = C20Interface(C20InterfaceAddress);
 
     // PUBLIC VARIABLES:
@@ -40,7 +40,7 @@ contract Liquidation is SafeMath {
     address public fundWallet;
     address public controlWallet;
 
-    /// @dev Control of liquidation within liquidation contract
+    /// @dev Escrow wallet for C20 liquidation
     address public liquidationWallet;
 
     // TODO: implement wait time for price updates
@@ -81,8 +81,15 @@ contract Liquidation is SafeMath {
     // TODO: create events for functions to communicate with front-end
 
     // CONSTRUCTOR:
-    function Liquidation {
+    function Liquidation(address fundWalletInput, address controlWalletInput, uint256 priceNumeratorInput) {
+        require(fundWalletInput != address(0));
+        require(controlWalletInput != address(0));
+        require(priceNumeratorInput > 0);
+        fundWallet = fundWalletInput;
+        controlWallet = controlWalletInput;
         liquidationWallet = msg.sender;
+        currentPrice = Price(priceNumeratorInput, 1000);
+        previousUpdateTime = now;
     }
 
     // FUNCTIONS:
