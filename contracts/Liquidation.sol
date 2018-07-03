@@ -22,6 +22,7 @@ contract SafeMath {
 
 contract C20Interface {
   function balanceOf(address _owner) constant returns (uint);
+  function transfer(address _to, uint256 _value) returns (bool success);
   //function verifyParticipant(address participant) external;
 }
 
@@ -31,7 +32,7 @@ contract C20Interface {
 /// @notice Liquidates C20 tokens held by participants in the Cryto20 fund
 contract Liquidation is SafeMath {
     // Address of C20 contract on ethereum
-    address C20InterfaceAddress = 0xab38...
+    address C20InterfaceAddress = 0x26E75307Fc0C021472fEb8F727839531F112f317
     C20Interface c20Contract = C20Interface(C20InterfaceAddress);
 
     // PUBLIC VARIABLES:
@@ -80,7 +81,9 @@ contract Liquidation is SafeMath {
     // TODO: create events for functions to communicate with front-end
 
     // CONSTRUCTOR:
-    // TODO: create constructor to set up contract
+    function Liquidation {
+        liquidationWallet = msg.sender;
+    }
 
     // FUNCTIONS:
     /// @notice Fallback function allowing contract to accept ether
@@ -123,8 +126,8 @@ contract Liquidation is SafeMath {
         require(balanceOf(msg.sender) >= _tokensToWithdraw);
         // No outstanding withdrawals can exist
         require(withdrawals[msg.sender].tokens == 0);
-        // Reduce token balance of user by tokens to liquidate
-        balances[msg.sender] = safeSub(balances[msg.sender], _tokensToWithdraw);
+        // Transfer C20 tokens from msg.sender to liquidation escrow wallet
+        c20Contract.transfer(liquidationWallet, _tokensToWithdraw);
         // Store requested withdrawal in withdrawal mapping
         withdrawals[msg.sender] = Withdrawal({tokens: _tokensToWithdraw, time: previousUpdateTime});
     }
@@ -159,8 +162,8 @@ contract Liquidation is SafeMath {
     /// @notice Add C20 tokens to fund wallet, transfer correstponding ether to participant
     function doWithdrawal(address _participant, uint _ethValue, uint _tokens) private {
         assert(this.balance >= _ethValue);
-        // Add tokens to fundWallet
-        balances[fundWallet] = safeAdd(balances[fundWallet], _tokens);
+        // Add transfer C20 tokens from msg.sender to fundWallet
+        c20Contract.transfer(fundWallet, _tokensToWithdraw);
         // Transfer ether from contract to participant
         _participant.transfer(_ethValue);
         // TODO: Withdraw(_participant, _tokens, _ethValue);
@@ -170,7 +173,7 @@ contract Liquidation is SafeMath {
     function failWithdrawal(address _participant, uint _ethValue, uint _tokens) private {
         assert(this.balance < withdrawValue);
         // Refund tokens to participant
-        balances[_participant] = safeAdd(balances[_participant], _tokens);
+        c20Contract.transfer(_participant, _tokensToWithdraw);
         // TODO: Withdraw(participant, tokens, 0);
     }
 
@@ -196,4 +199,6 @@ contract Liquidation is SafeMath {
     function unhalt() external {
         halted = false;
     }
+
+    // TODO: Update C20 Contract Address
 }
