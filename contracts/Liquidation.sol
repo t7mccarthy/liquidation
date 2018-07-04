@@ -23,6 +23,7 @@ contract SafeMath {
 contract C20Interface {
   function balanceOf(address _owner) public constant returns (uint);
   function transfer(address _to, uint256 _value) public returns (bool success);
+  mapping (address => bool) public whitelist;
   //function verifyParticipant(address participant) external;
 }
 
@@ -67,6 +68,10 @@ contract Liquidation is SafeMath {
 
     //MODIFIERS:
     // TODO: create modifiers
+    modifier onlyWhitelist {
+      require(c20Contract.whitelist(msg.sender));
+      _;
+    }
 
     // EVENTS:
     // TODO: create events for functions to communicate with front-end
@@ -118,7 +123,7 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Allows user to request a certain amount of tokens to liquidate
-    function requestWithdrawal(uint _tokensToWithdraw) external {
+    function requestWithdrawal(uint _tokensToWithdraw) external onlyWhitelist {
         require(_tokensToWithdraw > 0);
         require(balanceOf(msg.sender) >= _tokensToWithdraw);
         // No outstanding withdrawals can exist
@@ -130,7 +135,7 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Called by user after requesting withdrawal to carry out withdrawal
-    function withdraw() external {
+    function withdraw() external onlyWhitelist {
         uint tokens = withdrawals[msg.sender].tokens;
         // Withdrawal must have been requested
         require(tokens > 0);
