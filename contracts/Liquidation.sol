@@ -117,13 +117,13 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Gets C20 token balance of participant from C20 contract
-    function balanceOf(address _participant) private view returns (uint balance) {
+    function balanceOf(address _participant) public view returns (uint balance) {
         // TODO: Get balance from balanceOf function in C20 contract
         return c20Contract.balanceOf(_participant);
     }
 
     /// @notice Allows user to request a certain amount of tokens to liquidate
-    function requestWithdrawal(uint _tokensToWithdraw) external onlyWhitelist {
+    function requestWithdrawal(uint _tokensToWithdraw) external {//onlyWhitelist {
         require(_tokensToWithdraw > 0);
         require(balanceOf(msg.sender) >= _tokensToWithdraw);
         // No outstanding withdrawals can exist
@@ -135,7 +135,7 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Called by user after requesting withdrawal to carry out withdrawal
-    function withdraw() external onlyWhitelist {
+    function withdraw() external {//onlyWhitelist {
         uint tokens = withdrawals[msg.sender].tokens;
         // Withdrawal must have been requested
         require(tokens > 0);
