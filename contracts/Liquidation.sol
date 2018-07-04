@@ -3,12 +3,12 @@ pragma solidity ^0.4.22;
 
 /// @title A contract used to prevent uint overflow issues when performing mathematical operations
 contract SafeMath {
-    function safeMul(uint a, uint b) pure returns (uint) {
+    function safeMul(uint a, uint b) internal pure returns (uint) {
         uint c = a * b;
         assert(a == 0 || c / a == b);
         return c;
     }
-    function safeSub(uint a, uint b) pure returns (uint) {
+    function safeSub(uint a, uint b) internal pure returns (uint) {
         assert(b <= a);
         return a - b;
     }
@@ -124,7 +124,7 @@ contract Liquidation is SafeMath {
         // No outstanding withdrawals can exist
         require(withdrawals[msg.sender].tokens == 0);
         // Transfer C20 tokens from msg.sender to liquidation escrow wallet
-        c20Contract.transferFrom(msg.sender, this, amount);
+        c20Contract.transfer(this, _tokensToWithdraw);
         // Store requested withdrawal in withdrawal mapping
         withdrawals[msg.sender] = Withdrawal({tokens: _tokensToWithdraw, time: previousUpdateTime});
     }
@@ -137,7 +137,7 @@ contract Liquidation is SafeMath {
         // previousUpdateTime when request was made
         uint requestTime = withdrawals[msg.sender].time;
         // Next price that was set after the request (maintaining forward pricing policy)
-        Price priceAfterRequest = prices[requestTime];
+        Price memory priceAfterRequest = prices[requestTime];
         // Price must have been set after requestTime
         require(priceAfterRequest.numerator > 0);
         // Convert number of C20 tokens in liquidation request to ether
@@ -160,9 +160,10 @@ contract Liquidation is SafeMath {
     function doWithdrawal(address _participant, uint _ethValue, uint _tokens) private {
         assert(address(this).balance >= _ethValue); //this.balance
         // Add transfer C20 tokens from msg.sender to fundWallet
-        c20Contract.transferFrom(this, fundwallet, _tokens);
+        c20Contract.transfer(fundWallet, _tokens);
+        //c20Contract.transferFrom(this, fundwallet, _tokens);
         // Transfer ether from contract to participant
-        _participant.send(_ethValue);
+        _participant.transfer(_ethValue);
         // TODO: Withdraw(_participant, _tokens, _ethValue);
     }
 
@@ -170,7 +171,8 @@ contract Liquidation is SafeMath {
     function failWithdrawal(address _participant, uint _ethValue, uint _tokens) private {
         assert(address(this).balance < _ethValue); //this.balance
         // Refund tokens to participant
-        c20Contract.transferFrom(this, _participant, _tokens);
+        c20Contract.transfer(_participant, _tokens);
+        //c20Contract.transferFrom(this, _participant, _tokens);
         // TODO: Withdraw(participant, tokens, 0);
     }
 
