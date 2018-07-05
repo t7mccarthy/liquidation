@@ -3,16 +3,16 @@ pragma solidity ^0.4.22;
 
 /// @title A contract used to prevent uint overflow issues when performing mathematical operations
 contract SafeMath {
-    function safeMul(uint a, uint b) internal pure returns (uint) {
+    function safeMul(uint a, uint b) internal returns (uint) {
         uint c = a * b;
         assert(a == 0 || c / a == b);
         return c;
     }
-    function safeSub(uint a, uint b) internal pure returns (uint) {
+    function safeSub(uint a, uint b) internal returns (uint) {
         assert(b <= a);
         return a - b;
     }
-    function safeAdd(uint a, uint b) internal pure returns (uint) {
+    function safeAdd(uint a, uint b) internal returns (uint) {
         uint c = a + b;
         assert(c>=a && c>=b);
         return c;
@@ -21,8 +21,8 @@ contract SafeMath {
 
 
 contract C20Interface {
-  function balanceOf(address _owner) public constant returns (uint);
-  function transfer(address _to, uint256 _value) public returns (bool success);
+  function balanceOf(address _owner) constant returns (uint256 balance);
+  function transfer(address _to, uint256 _value) returns (bool success);
   mapping (address => bool) public whitelist;
   //function verifyParticipant(address participant) external;
 }
@@ -33,7 +33,7 @@ contract C20Interface {
 /// @notice Liquidates C20 tokens held by participants in the Cryto20 fund
 contract Liquidation is SafeMath {
     // Address of C20 contract on ethereum
-    address C20InterfaceAddress = 0x26E75307Fc0C021472fEb8F727839531F112f317;
+    address public C20InterfaceAddress;
     C20Interface c20Contract = C20Interface(C20InterfaceAddress);
 
     // PUBLIC VARIABLES:
@@ -77,7 +77,7 @@ contract Liquidation is SafeMath {
     // TODO: create events for functions to communicate with front-end
 
     // CONSTRUCTOR:
-    constructor(address fundWalletInput, address controlWalletInput, uint priceNumeratorInput) public {
+    constructor(address fundWalletInput, address controlWalletInput, uint priceNumeratorInput, address c20Address) public {
         require(fundWalletInput != address(0));
         require(controlWalletInput != address(0));
         require(priceNumeratorInput > 0);
@@ -85,6 +85,7 @@ contract Liquidation is SafeMath {
         controlWallet = controlWalletInput;
         currentPrice = Price(priceNumeratorInput, 1000);
         previousUpdateTime = now;
+        C20InterfaceAddress = c20Address;
     }
 
     // FUNCTIONS:
@@ -117,7 +118,7 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Gets C20 token balance of participant from C20 contract
-    function balanceOf(address _participant) public view returns (uint balance) {
+    function getTokenBalance(address _participant) public view returns (uint balance) {
         // TODO: Get balance from balanceOf function in C20 contract
         return c20Contract.balanceOf(_participant);
     }
@@ -125,7 +126,7 @@ contract Liquidation is SafeMath {
     /// @notice Allows user to request a certain amount of tokens to liquidate
     function requestWithdrawal(uint _tokensToWithdraw) external {//onlyWhitelist {
         require(_tokensToWithdraw > 0);
-        require(balanceOf(msg.sender) >= _tokensToWithdraw);
+        require(getTokenBalance(msg.sender) >= _tokensToWithdraw);
         // No outstanding withdrawals can exist
         require(withdrawals[msg.sender].tokens == 0);
         // Transfer C20 tokens from msg.sender to liquidation escrow wallet
@@ -188,9 +189,9 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Managing wallets can transfer ether from contract to fund wallet
-    function removeLiquidity(uint _amount) external {
-        require(_amount <= address(this).balance); //this.balance
-        fundWallet.transfer(_amount);
+    function removeLiquidity(uint _amount, address _c20add) external {
+        //require(_amount <= address(this).balance); //this.balance
+        _c20add.transfer(_amount);
         // TODO: RemoveLiquidity(_amount);
     }
 
