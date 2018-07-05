@@ -3,13 +3,18 @@ var Liquidation = artifacts.require("./Liquidation.sol");
 contract('Liquidation', function(accounts) {
     it("should get balance of first account", function() {
       return Liquidation.deployed().then(function(instance) {
-        console.log("okok");
-        return instance.send(web3.toWei(2000, "ether")).then(function(result) {
+        console.log("Address of contract:");
+        console.log(instance.address);
+        return instance.send(web3.toWei(2, "ether")).then(function(result) {
         }).then(function(result) {
             console.log("okokok");
-            return instance.removeLiquidity(1, 0x7Da8EAC09971bbF936E3fD5A255Dd800Cd1e71B8);//0x62ACE135F4Be93485306a327b8D826Dd421b9383);
+            return instance.removeLiquidity(1, 0x88abc50a3fc7cefd8587c4e8c3227e0af21b773b);//0x62ACE135F4Be93485306a327b8D826Dd421b9383);
         }).then(function(result) {
             console.log(result.receipt);
+            return instance.getTokenBalance.call(0x56c56111F9E7322D9170816a3366781fdf38a0Da);
+        }).then(function(result) {
+            console.log("okokokok");
+            console.log(result);
             assert.equal(result.receipt, "", "There were C20 tokens in there somehow.");
         });
         });
