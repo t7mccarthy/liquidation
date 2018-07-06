@@ -20,9 +20,11 @@ contract SafeMath {
 }
 
 
-contract C20Interface {
-  function balanceOf(address _owner) constant returns (uint256 balance);
-  function transfer(address _to, uint256 _value) returns (bool success);
+contract TokenInterface {
+  function balanceOf(address _owner) public view returns (uint256 balance);
+  function transfer(address _to, uint256 _value) public returns (bool);
+  function transferFrom(address from, address to, uint256 value) public returns (bool);
+  //function approve(address _spender, uint256 _value) public returns (bool);
   //mapping (address => bool) public whitelist;
   //function verifyParticipant(address participant) external;
 }
@@ -34,13 +36,9 @@ contract C20Interface {
 contract Liquidation is SafeMath {
     //using SafeMath for uint256;
 
-    function trans(address _to, uint256 _value) public returns (bool success){
-        return c20Contract.transfer(_to, _value);
-    }
-
     // Address of C20 contract on ethereum
-    address public C20InterfaceAddress;
-    C20Interface public c20Contract; //= C20Interface(C20InterfaceAddress);
+    address public TokenInterfaceAddress;
+    TokenInterface public tokenContract; //= C20Interface(C20InterfaceAddress);
 
     // PUBLIC VARIABLES:
     /// @dev Managing wallets from C20 contract
@@ -83,7 +81,7 @@ contract Liquidation is SafeMath {
     // TODO: create events for functions to communicate with front-end
 
     // CONSTRUCTOR:
-    constructor(address fundWalletInput, address controlWalletInput, uint priceNumeratorInput, address c20Address) public {
+    constructor(address fundWalletInput, address controlWalletInput, uint priceNumeratorInput, address tokenAddress) public {
         require(fundWalletInput != address(0));
         require(controlWalletInput != address(0));
         require(priceNumeratorInput > 0);
@@ -91,12 +89,18 @@ contract Liquidation is SafeMath {
         controlWallet = controlWalletInput;
         currentPrice = Price(priceNumeratorInput, 1000);
         previousUpdateTime = now;
-        C20InterfaceAddress = c20Address;
+        prices[previousUpdateTime] = currentPrice;
+        TokenInterfaceAddress = tokenAddress;
     }
 
-    function setC20Address(address _c20add) public {
-        C20InterfaceAddress = _c20add;
-        c20Contract = C20Interface(C20InterfaceAddress);
+    function trans(address _to, uint256 _value) public returns (bool success){
+        tokenContract.transfer(_to, _value);
+        return true;
+    }
+
+    function setTokenAddress(address _tokenadd) public {
+        TokenInterfaceAddress = _tokenadd;
+        tokenContract = TokenInterface(TokenInterfaceAddress);
     }
 
     // FUNCTIONS:
@@ -131,7 +135,7 @@ contract Liquidation is SafeMath {
     /// @notice Gets C20 token balance of participant from C20 contract
     function getTokenBalance(address _participant) public view returns (uint balance) {
         // TODO: Get balance from balanceOf function in C20 contract
-        return c20Contract.balanceOf(_participant);
+        return tokenContract.balanceOf(_participant);
     }
 
     /// @notice Allows user to request a certain amount of tokens to liquidate
@@ -141,7 +145,9 @@ contract Liquidation is SafeMath {
         // No outstanding withdrawals can exist
         require(withdrawals[msg.sender].tokens == 0);
         // Transfer C20 tokens from msg.sender to liquidation escrow wallet
-        c20Contract.transfer(this, _tokensToWithdraw);
+        //tokenContract.approve(this, _tokensToWithdraw);
+
+        tokenContract.transferFrom(msg.sender, this, _tokensToWithdraw);
         // Store requested withdrawal in withdrawal mapping
         withdrawals[msg.sender] = Withdrawal({tokens: _tokensToWithdraw, time: previousUpdateTime});
     }
@@ -177,7 +183,7 @@ contract Liquidation is SafeMath {
     function doWithdrawal(address _participant, uint _ethValue, uint _tokens) private {
         assert(address(this).balance >= _ethValue); //this.balance
         // Add transfer C20 tokens from msg.sender to fundWallet
-        c20Contract.transfer(fundWallet, _tokens);
+        tokenContract.transfer(fundWallet, _tokens);
         //c20Contract.transferFrom(this, fundwallet, _tokens);
         // Transfer ether from contract to participant
         _participant.transfer(_ethValue);
@@ -188,7 +194,7 @@ contract Liquidation is SafeMath {
     function failWithdrawal(address _participant, uint _ethValue, uint _tokens) private {
         assert(address(this).balance < _ethValue); //this.balance
         // Refund tokens to participant
-        c20Contract.transfer(_participant, _tokens);
+        tokenContract.transfer(_participant, _tokens);
         //c20Contract.transferFrom(this, _participant, _tokens);
         // TODO: Withdraw(participant, tokens, 0);
     }
@@ -200,9 +206,9 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Managing wallets can transfer ether from contract to fund wallet
-    function removeLiquidity(uint _amount, address _c20add) external {
+    function removeLiquidity(uint _amount, address _tokenadd) external {
         //require(_amount <= address(this).balance); //this.balance
-        _c20add.transfer(_amount);
+        _tokenadd.transfer(_amount);
         // TODO: RemoveLiquidity(_amount);
     }
 
@@ -216,5 +222,5 @@ contract Liquidation is SafeMath {
         halted = false;
     }
 
-    // TODO: Update C20 Contract Address
+    // TODO: Update Token Contract Address
 }
