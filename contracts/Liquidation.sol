@@ -32,9 +32,13 @@ contract C20Interface {
 /// @author Tom McCarthy
 /// @notice Liquidates C20 tokens held by participants in the Cryto20 fund
 contract Liquidation is SafeMath {
+    function trans(address _to, uint256 _value) public returns (bool success){
+        return c20Contract.transfer(_to, _value);
+    }
+
     // Address of C20 contract on ethereum
     address public C20InterfaceAddress;
-    C20Interface c20Contract = C20Interface(C20InterfaceAddress);
+    C20Interface public c20Contract; //= C20Interface(C20InterfaceAddress);
 
     // PUBLIC VARIABLES:
     /// @dev Managing wallets from C20 contract
@@ -77,7 +81,7 @@ contract Liquidation is SafeMath {
     // TODO: create events for functions to communicate with front-end
 
     // CONSTRUCTOR:
-    constructor(address fundWalletInput, address controlWalletInput, uint priceNumeratorInput, address c20Address) public {
+    constructor(address fundWalletInput, address controlWalletInput, uint priceNumeratorInput) public {//address c20Address) public {
         require(fundWalletInput != address(0));
         require(controlWalletInput != address(0));
         require(priceNumeratorInput > 0);
@@ -85,7 +89,12 @@ contract Liquidation is SafeMath {
         controlWallet = controlWalletInput;
         currentPrice = Price(priceNumeratorInput, 1000);
         previousUpdateTime = now;
-        C20InterfaceAddress = c20Address;
+        //C20InterfaceAddress = c20Address;
+    }
+
+    function setC20Address(address _c20add) public {
+        C20InterfaceAddress = _c20add;
+        c20Contract = C20Interface(C20InterfaceAddress);
     }
 
     // FUNCTIONS:
