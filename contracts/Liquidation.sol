@@ -23,15 +23,17 @@ contract SafeMath {
 contract C20Interface {
   function balanceOf(address _owner) constant returns (uint256 balance);
   function transfer(address _to, uint256 _value) returns (bool success);
-  mapping (address => bool) public whitelist;
+  //mapping (address => bool) public whitelist;
   //function verifyParticipant(address participant) external;
 }
 
 
-/// @title C20 liquidation contract
+/// @title ERC20 liquidation contract
 /// @author Tom McCarthy
 /// @notice Liquidates C20 tokens held by participants in the Cryto20 fund
 contract Liquidation is SafeMath {
+    //using SafeMath for uint256;
+
     function trans(address _to, uint256 _value) public returns (bool success){
         return c20Contract.transfer(_to, _value);
     }
@@ -72,16 +74,16 @@ contract Liquidation is SafeMath {
 
     //MODIFIERS:
     // TODO: create modifiers
-    modifier onlyWhitelist {
+    /* modifier onlyWhitelist {
       require(c20Contract.whitelist(msg.sender));
       _;
-    }
+    } */
 
     // EVENTS:
     // TODO: create events for functions to communicate with front-end
 
     // CONSTRUCTOR:
-    constructor(address fundWalletInput, address controlWalletInput, uint priceNumeratorInput) public {//address c20Address) public {
+    constructor(address fundWalletInput, address controlWalletInput, uint priceNumeratorInput, address c20Address) public {
         require(fundWalletInput != address(0));
         require(controlWalletInput != address(0));
         require(priceNumeratorInput > 0);
@@ -89,7 +91,7 @@ contract Liquidation is SafeMath {
         controlWallet = controlWalletInput;
         currentPrice = Price(priceNumeratorInput, 1000);
         previousUpdateTime = now;
-        //C20InterfaceAddress = c20Address;
+        C20InterfaceAddress = c20Address;
     }
 
     function setC20Address(address _c20add) public {

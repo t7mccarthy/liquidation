@@ -1,4 +1,5 @@
 var Liquidation = artifacts.require("./Liquidation.sol");
+var BasicToken = artifacts.require("./BasicToken.sol");
 
 contract('Liquidation', function(accounts) {
     it("should transfer to c20", function() {
