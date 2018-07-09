@@ -100,7 +100,7 @@ contract('Liquidation', function(accounts) {
             console.log(web3.eth.getBalance(liquidation.address).toNumber());
             console.log("Fund Wallet Ether Balance 2:");
             console.log(web3.eth.getBalance(fundWallet).toNumber());
-            return liquidation.removeLiquidity(10, {from: });
+            return liquidation.removeLiquidity(10);
         }).then(function(result) {
             console.log("Contract Ether Balance 3:");
             console.log(web3.eth.getBalance(liquidation.address).toNumber());
