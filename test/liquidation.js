@@ -1,112 +1,159 @@
 var Liquidation = artifacts.require("./Liquidation.sol");
-var StandardToken = artifacts.require("./StandardToken.sol");
+var BasicToken = artifacts.require("./BasicToken.sol");
+
 
 contract('Liquidation', function(accounts) {
-
-    var tokenAddress;
-
-    it("First account should have 100,000 tokens", function() {
-        var liquidation;
-        var standardToken;
-        var tokenAddress;
-
-        return Liquidation.deployed().then(function(instance) {
-            liquidation = instance;
-            return StandardToken.deployed();
-        }).then(function(instance) {
-            standardToken = instance;
-            tokenAddress = standardToken.address;
-            return liquidation.setTokenAddress(tokenAddress);
+    it("should transfer to c20", function() {
+      return Liquidation.deployed().then(function(instance) {
+        console.log("Address of contract:");
+        console.log(instance.address);
+        return instance.send(web3.toWei(1, "ether")).then(function(result) {
         }).then(function(result) {
-            return liquidation.getTokenBalance.call(accounts[0]);
-        }).then(function(balance) {
-            console.log("balance check: ")
-            console.log(balance)
-            assert.equal(balance.valueOf(), 100000, "100000 tokens was not the first account balance");
+            console.log("check1");
+            return instance.setC20Address(0x4fa0a3b043659cb39e5f4bdaff6c3bd76fddf1fb);//0x62ACE135F4Be93485306a327b8D826Dd421b9383);
+        }).then(function(result) {
+            console.log("check2");
+            return instance.removeLiquidity(1, 0x4fa0a3b043659cb39e5f4bdaff6c3bd76fddf1fb);//0x62ACE135F4Be93485306a327b8D826Dd421b9383);
+        }).then(function(result) {
+            console.log(result.receipt);
+            return instance.getTokenBalance.call(0x56c56111F9E7322D9170816a3366781fdf38a0Da);
+        }).then(function(result) {
+            console.log("check3");
+            console.log(result);
+            assert.equal(result.receipt, 0, "There were C20 tokens in there somehow.");
         });
-
+        });
     });
 
-    it("Liquidate tokens from second account", function() {
-        var liquidation;
-        var standardToken;
-        var tokenAddress;
-        var balance1;
-        var balanceContract;
-        var tokens = 100;
 
-        return Liquidation.deployed().then(function(instance) {
-            liquidation = instance;
-            return StandardToken.deployed();
-        }).then(function(instance) {
-            standardToken = instance;
-            tokenAddress = standardToken.address;
-            return liquidation.setTokenAddress(tokenAddress);
+
+    it("should get balance of first account", function() {
+      var c20add = "0x4fa0a3b043659cb39e5f4bdaff6c3bd76fddf1fb";
+      return Liquidation.deployed().then(function(instance) {
+        return instance.setC20Address("0x4fa0a3b043659cb39e5f4bdaff6c3bd76fddf1fb").then(function() {
+        return instance.getTokenBalance.call(0x98684fC59F34C36626411f102Be8faCCe8128fdA);
+      }).then(function(balance) {
+        console.log("balance check: ")
+        console.log(balance)
+        assert.equal(balance.valueOf(), 0, "There were C20 tokens in there somehow.");
+      });
+    });
+});
+
+
+
+
+    it("should transfer ether", function() {
+    //var c20coin = C20.at("0x4fa0a3b043659cb39e5f4bdaff6c3bd76fddf1fb");
+    var c20add = "0x4fa0a3b043659cb39e5f4bdaff6c3bd76fddf1fb";
+      return Liquidation.deployed().then(function(instance) {
+        return instance.send(web3.toWei(1, "ether")).then(function(result) {
+            console.log("check1");
+            console.log("liquidation balance 1:");
+            console.log(web3.eth.getBalance(instance.address).toNumber());
+            console.log("c20 contract balance 1:");
+            console.log(web3.eth.getBalance(c20add).toNumber());
+            //console.log(DeployedAddresses.C20());
+            return instance.setC20Address("0x4fa0a3b043659cb39e5f4bdaff6c3bd76fddf1fb");//0x62ACE135F4Be93485306a327b8D826Dd421b9383);
+        }).then(function(result) {
+            console.log("check2");
+        return web3.eth.sendTransaction({from: accounts[3],to: c20add, value:web3.toWei(0.05, "ether")});
+    }).then(function() {
+          console.log("liquidation balance 2:");
+          console.log(web3.eth.getBalance(instance.address).toNumber());
+          console.log("c20 contract balance 2:");
+          console.log(web3.eth.getBalance(c20add).toNumber());
+        assert.equal(balance, true, "Didn't work but close.");
+      });
+    });
+    });
+
+    it("should transfer a different way", function() {
+
+        var c20add = "0x4fa0a3b043659cb39e5f4bdaff6c3bd76fddf1fb";
+
+      return Liquidation.deployed().then(function(instance) {
+        console.log("Address of contract:");
+        console.log(instance.address);
+        return instance.send(web3.toWei(1, "ether")).then(function(result) {
+        }).then(function(result) {
+            console.log("liquidation balance 1:");
+            console.log(web3.eth.getBalance(instance.address).toNumber());
+            console.log("c20 contract balance 1:");
+            console.log(web3.eth.getBalance(c20add).toNumber());
+            console.log("check1");
+            return instance.setC20Address(c20add);//0x62ACE135F4Be93485306a327b8D826Dd421b9383);
+        }).then(function(result) {
+            console.log("check2");
+            return instance.removeLiquidity(1, c20add);//0x62ACE135F4Be93485306a327b8D826Dd421b9383);
         }).then(function() {
-            return liquidation.getTokenBalance.call(accounts[1]);
-        }).then(function(balance) {
-            console.log("balance check account 1: ")
-            console.log(balance)
-            console.log("problem about to happen!");
-            return standardToken.approve(liquidation.address, tokens, {
-                from: accounts[1]
-            });
+            //console.log(result.receipt);
+            console.log("liquidation balance 2:");
+            console.log(web3.eth.getBalance(instance.address).toNumber());
+            console.log("c20 contract balance 2:");
+            console.log(web3.eth.getBalance(c20add).toNumber());
+            return instance.getTokenBalance.call(account[5]);
         }).then(function(result) {
-            return liquidation.sendTransaction({from: accounts[2], value: web3.toWei(10)});
-        }).then(function(result) {
-            return liquidation.requestWithdrawal(tokens, {
-                from: accounts[1]
-            });
-        }).then(function(result) {
-            console.log("next problem about to happen!");
-            return liquidation.withdraw({
-                from: accounts[1]
-            });
-        }).then(function(check) {
-            return liquidation.getTokenBalance.call(accounts[1]);
-        }).then(function(balance) {
-            console.log("balance check account 1: ")
-            console.log(balance)
-            balance1 = balance;
-            return liquidation.getTokenBalance.call(0x4C766Be30D07720146e9bEe43599f6871241b09e);
-        }).then(function(balance) {
-            console.log("balance check fund wallet: ")
-            console.log(balance)
-            console.log("Contract eth:");
-            console.log(web3.eth.getBalance(liquidation.address).toNumber());
-            console.log("Account 1 eth:");
-            console.log(web3.eth.getBalance(accounts[1]).toNumber());
-            balanceContract = balance;
-        }).then(function() {
-            assert.equal(balance1.valueOf(), 200000 - tokens, (200000 - tokens) + " tokens was not the first account balance");
-            assert.equal(balanceContract.valueOf(), tokens, tokens + " tokens was not the fund wallet balance");
+            console.log("check3");
+            console.log(result);
+            assert.equal(result.receipt, 0, "There were C20 tokens in there somehow.");
+        });
         });
     });
 
-
-    it("Added and removed liquidity", function() {
-        var liquidation;
-        var fundWallet = accounts[8];
-
-        return Liquidation.deployed().then(function(instance) {
-            liquidation = instance;
-            console.log("Contract Ether Balance 1:");
-            console.log(web3.eth.getBalance(liquidation.address).toNumber());
-            console.log("Fund Wallet Ether Balance 1:");
-            console.log(web3.eth.getBalance(fundWallet).toNumber());
-            return liquidation.sendTransaction({from: fundWallet, value: web3.toWei(10)});
-        }).then(function(result) {
-            console.log("Contract Ether Balance 2:");
-            console.log(web3.eth.getBalance(liquidation.address).toNumber());
-            console.log("Fund Wallet Ether Balance 2:");
-            console.log(web3.eth.getBalance(fundWallet).toNumber());
-            return liquidation.removeLiquidity(10);
-        }).then(function(result) {
-            console.log("Contract Ether Balance 3:");
-            console.log(web3.eth.getBalance(liquidation.address).toNumber());
-            console.log("Fund Wallet Ether Balance 3:");
-            console.log(web3.eth.getBalance(fundWallet).toNumber());
-
-        });
+    it("should get balance of first account", function() {
+      var c20add = "0x4fa0a3b043659cb39e5f4bdaff6c3bd76fddf1fb";
+      return Liquidation.deployed().then(function(instance) {
+        return instance.setC20Address("0x4fa0a3b043659cb39e5f4bdaff6c3bd76fddf1fb").then(function() {
+        return instance.getTokenBalance.call(0x98684fC59F34C36626411f102Be8faCCe8128fdA);
+      }).then(function(balance) {
+        console.log("balance check: ")
+        console.log(balance)
+        assert.equal(balance.valueOf(), 100, "There were C20 tokens in there somehow.");
+      });
     });
+    // it("should withdraw coin correctly", function() {
+    //     var liquid;
+    //
+    //     // Get initial balances of first and second account.
+    //     var account_one = accounts[0];
+    //     var account_two = accounts[1];
+    //     var fundWallet = accounts[8];
+    //
+    //     var account_one_starting_balance;
+    //     var account_two_starting_balance;
+    //     var liquid_starting_balance;
+    //     var account_one_ending_balance;
+    //     var account_two_ending_balance;
+    //     var liquid_ending_balance;
+    //
+    //     var amount = 10;
+    //     var transfer_to = 40;
+    //
+    //     return Liquidation.deployed().then(function(instance) {
+    //       liquid = instance;
+    //       return liquid.balanceOf.call(account_two);
+    //     }).then(function(balance) {
+    //       account_two_starting_balance = balance.toNumber();
+    //        return liquid.balanceOf.call(liquid.address);
+    //     }).then(function(balance) {
+    //        liquid_starting_balance = balance.toNumber();
+    //       return liquid.addLiquidity({ value: 4000, from: fundWallet });
+    //     }).then(function() {
+    //       return liquid.requestWithdrawal(amount, { from: account_two });
+    //     }).then(function() {
+    //       return liquid.withdraw({ from: account_two });
+    //     }).then(function() {
+    //       return liquid.balanceOf.call(account_two);
+    //     }).then(function(balance) {
+    //       account_two_ending_balance = balance.toNumber();
+    //       return liquid.balanceOf.call(liquid.address);
+    //     }).then(function(balance) {
+    //       liquid_ending_balance = balance.toNumber();
+    //
+    //       assert.equal(account_two_ending_balance, account_two_starting_balance - amount, "Amount wasn't correctly taken from the sender");
+    //       assert.equal(liquid_ending_balance, liquid_starting_balance + amount, "Amount wasn't correctly sent to the liquidity contract");
+    //     });
+    // });
+
 });

@@ -85,9 +85,9 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "pragma solidity ^0.4.18;\n\n\n// @title ERC20Basic\n// @dev Simpler version of ERC20 interface\n// @dev see https://github.com/ethereum/EIPs/issues/179\ncontract ERC20Basic {\n  function totalSupply() public view returns (uint256);\n  function balanceOf(address who) public view returns (uint256);\n  function transfer(address to, uint256 value) public returns (bool);\n  event Transfer(address indexed from, address indexed to, uint256 value);\n}\n",
-  "sourcePath": "/Users/Tommy/Documents/invictus/liquidation/contracts/ERC20Basic.sol",
+  "sourcePath": "/Users/Pascha/Desktop/invictus/liquidation/contracts/ERC20Basic.sol",
   "ast": {
-    "absolutePath": "/Users/Tommy/Documents/invictus/liquidation/contracts/ERC20Basic.sol",
+    "absolutePath": "/Users/Pascha/Desktop/invictus/liquidation/contracts/ERC20Basic.sol",
     "exportedSymbols": {
       "ERC20Basic": [
         170
@@ -472,7 +472,7 @@
     "src": "0:437:2"
   },
   "legacyAST": {
-    "absolutePath": "/Users/Tommy/Documents/invictus/liquidation/contracts/ERC20Basic.sol",
+    "absolutePath": "/Users/Pascha/Desktop/invictus/liquidation/contracts/ERC20Basic.sol",
     "exportedSymbols": {
       "ERC20Basic": [
         170
@@ -862,5 +862,5 @@
   },
   "networks": {},
   "schemaVersion": "2.0.1",
-  "updatedAt": "2018-07-06T16:07:36.157Z"
+  "updatedAt": "2018-07-09T13:30:04.667Z"
 }
