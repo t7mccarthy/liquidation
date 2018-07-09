@@ -52,7 +52,7 @@ contract('Liquidation', function(accounts) {
                 from: accounts[1]
             });
         }).then(function(result) {
-            return liquidation.send(web3.toWei(10, "ether"))
+            return liquidation.sendTransaction({from: accounts[2], value: web3.toWei(10)});
         }).then(function(result) {
             return liquidation.requestWithdrawal(tokens, {
                 from: accounts[1]
@@ -80,6 +80,33 @@ contract('Liquidation', function(accounts) {
         }).then(function() {
             assert.equal(balance1.valueOf(), 200000 - tokens, (200000 - tokens) + " tokens was not the first account balance");
             assert.equal(balanceContract.valueOf(), tokens, tokens + " tokens was not the fund wallet balance");
+        });
+    });
+
+
+    it("Added and removed liquidity", function() {
+        var liquidation;
+        var fundWallet = accounts[8];
+
+        return Liquidation.deployed().then(function(instance) {
+            liquidation = instance;
+            console.log("Contract Ether Balance 1:");
+            console.log(web3.eth.getBalance(liquidation.address).toNumber());
+            console.log("Fund Wallet Ether Balance 1:");
+            console.log(web3.eth.getBalance(fundWallet).toNumber());
+            return liquidation.sendTransaction({from: fundWallet, value: web3.toWei(10)});
+        }).then(function(result) {
+            console.log("Contract Ether Balance 2:");
+            console.log(web3.eth.getBalance(liquidation.address).toNumber());
+            console.log("Fund Wallet Ether Balance 2:");
+            console.log(web3.eth.getBalance(fundWallet).toNumber());
+            return liquidation.removeLiquidity(10, {from: });
+        }).then(function(result) {
+            console.log("Contract Ether Balance 3:");
+            console.log(web3.eth.getBalance(liquidation.address).toNumber());
+            console.log("Fund Wallet Ether Balance 3:");
+            console.log(web3.eth.getBalance(fundWallet).toNumber());
+
         });
     });
 });
