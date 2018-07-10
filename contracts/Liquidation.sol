@@ -47,9 +47,6 @@ contract Liquidation is SafeMath {
     uint public previousUpdateTime;
     Price public currentPrice;
 
-    address public testAdd;
-    uint public testAmt;
-
     // STRUCTS:
     /// @dev Price of C20 (tokens per ether)
     struct Price {
@@ -72,6 +69,15 @@ contract Liquidation is SafeMath {
 
     //MODIFIERS:
     // TODO: create modifiers
+    modifier onlyFundWallet {
+        require(msg.sender == fundWallet);
+        _;
+    }
+
+    modifier notHalted {
+        require(!halted);
+        _;
+    }
 
 
     // EVENTS:
@@ -90,12 +96,7 @@ contract Liquidation is SafeMath {
         TokenInterfaceAddress = tokenAddress;
     }
 
-    function trans(address _to, uint256 _value) public returns (bool success){
-        tokenContract.transfer(_to, _value);
-        return true;
-    }
-
-    function setTokenAddress(address _tokenadd) public {
+    function setTokenAddress(address _tokenadd) public onlyFundWallet {
         TokenInterfaceAddress = _tokenadd;
         tokenContract = TokenInterface(TokenInterfaceAddress);
     }
@@ -106,7 +107,7 @@ contract Liquidation is SafeMath {
 
     /// @notice Updates number of C20 tokens per set amount of ether
     /// @dev Current update time is not mapped to current price in order to maintain forward pricing policy
-    function updatePrice(uint _newNumerator) external {
+    function updatePrice(uint _newNumerator) external onlyFundWallet {
         require(_newNumerator > 0);
         // TODO: require(limited_change(_newNumerator));
         // Update numerator of currentPrice
@@ -119,7 +120,7 @@ contract Liquidation is SafeMath {
 
     /// @notice Updates set amount of ether in measure of C20 tokens per set amount of ether
     /// @dev Not updated frequently like numerator; used in circumstances where order of magnitude of price changes
-    function updatePriceDenominator(uint _newDenominator) external {
+    function updatePriceDenominator(uint _newDenominator) external onlyFundWallet {
         require(_newDenominator > 0);
         // Update denominator of currentPrice
         currentPrice.denominator = _newDenominator;
@@ -136,7 +137,7 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Allows user to request a certain amount of tokens to liquidate
-    function requestWithdrawal(uint _tokensToWithdraw) external {//onlyWhitelist {
+    function requestWithdrawal(uint _tokensToWithdraw) external notHalted {//onlyWhitelist {
         require(_tokensToWithdraw > 0);
         require(getTokenBalance(msg.sender) >= _tokensToWithdraw);
         // No outstanding withdrawals can exist
@@ -148,7 +149,7 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Called by user after requesting withdrawal to carry out withdrawal
-    function withdraw() external {//onlyWhitelist {
+    function withdraw() external notHalted {//onlyWhitelist {
         uint tokens = withdrawals[msg.sender].tokens;
         // Withdrawal must have been requested
         require(tokens > 0);
@@ -182,9 +183,6 @@ contract Liquidation is SafeMath {
         // Transfer ether from contract to participant
         //uint eth = _ethValue * (10**18);
         _participant.transfer(_ethValue);
-
-        testAdd = _participant;
-        testAmt = _ethValue;
         // TODO: Withdraw(_participant, _tokens, _ethValue);
     }
 
@@ -196,26 +194,26 @@ contract Liquidation is SafeMath {
         // TODO: Withdraw(participant, tokens, 0);
     }
 
-    /// @notice Managing wallets can transfer ether to contract
+    /* /// @notice Managing wallets can transfer ether to contract
     function addLiquidity() external payable {
         require(msg.value > 0);
         // TODO: AddLiquidity(msg.value);
-    }
+    } */
 
     /// @notice Managing wallets can transfer ether from contract to fund wallet
-    function removeLiquidity(uint _amount) external {
+    function removeLiquidity(uint _amount) external onlyFundWallet notHalted {
         //require(_amount <= address(this).balance); //this.balance
         fundWallet.transfer(_amount);
         // TODO: RemoveLiquidity(_amount);
     }
 
     /// @notice Fund wallet can stop liquidation transactions from occurring
-    function halt() external {
+    function halt() external onlyFundWallet {
         halted = true;
     }
 
     /// @notice Fund wallet can allow liquidation transactions to occur again
-    function unhalt() external {
+    function unhalt() external onlyFundWallet {
         halted = false;
     }
 
