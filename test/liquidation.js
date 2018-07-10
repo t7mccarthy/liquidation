@@ -33,7 +33,12 @@ contract('Liquidation', function(accounts) {
         var tokenAddress;
         var balance1;
         var balanceContract;
-        var tokens = 100;
+        var tokens = 778700000000011;
+        var contractEth1;
+        var contractEth2;
+        var accountEth1;
+        var accountEth2;
+        var ac1bal;
 
         return Liquidation.deployed().then(function(instance) {
             liquidation = instance;
@@ -46,6 +51,7 @@ contract('Liquidation', function(accounts) {
             return liquidation.getTokenBalance.call(accounts[1]);
         }).then(function(balance) {
             console.log("balance check account 1: ")
+            ac1bal = balance;
             console.log(balance)
             console.log("problem about to happen!");
             return standardToken.approve(liquidation.address, tokens, {
@@ -54,6 +60,12 @@ contract('Liquidation', function(accounts) {
         }).then(function(result) {
             return liquidation.sendTransaction({from: accounts[2], value: web3.toWei(10)});
         }).then(function(result) {
+            console.log("Contract eth:");
+            contractEth1 = web3.eth.getBalance(liquidation.address).toNumber();
+            console.log(contractEth1);
+            console.log("Account 1 eth:");
+            accountEth1 = web3.eth.getBalance(accounts[1]).toNumber();
+            console.log(accountEth1);
             return liquidation.requestWithdrawal(tokens, {
                 from: accounts[1]
             });
@@ -62,24 +74,36 @@ contract('Liquidation', function(accounts) {
             return liquidation.withdraw({
                 from: accounts[1]
             });
+        }).then(function() {
+            return(liquidation.testAdd());
+        }).then(function(add) {
+            console.log(add);
+            return(liquidation.testAmt());
         }).then(function(check) {
+            console.log(check);
             return liquidation.getTokenBalance.call(accounts[1]);
         }).then(function(balance) {
             console.log("balance check account 1: ")
             console.log(balance)
             balance1 = balance;
-            return liquidation.getTokenBalance.call(0x4C766Be30D07720146e9bEe43599f6871241b09e);
+            return liquidation.getTokenBalance.call(accounts[8]);
         }).then(function(balance) {
             console.log("balance check fund wallet: ")
             console.log(balance)
             console.log("Contract eth:");
-            console.log(web3.eth.getBalance(liquidation.address).toNumber());
+            contractEth2 = web3.eth.getBalance(liquidation.address).toNumber();
+            console.log(contractEth2);
             console.log("Account 1 eth:");
-            console.log(web3.eth.getBalance(accounts[1]).toNumber());
+            accountEth2 = web3.eth.getBalance(accounts[1]).toNumber();
+            console.log(accountEth2);
             balanceContract = balance;
         }).then(function() {
-            assert.equal(balance1.valueOf(), 200000 - tokens, (200000 - tokens) + " tokens was not the first account balance");
+            console.log(contractEth1 + " becomes " + contractEth2);
+            console.log(accountEth1 + " becomes " + accountEth2);
+            assert.equal(balance1.valueOf(), ac1bal.valueOf() - tokens, (ac1bal.valueOf() - tokens) + " tokens was not the first account balance");
             assert.equal(balanceContract.valueOf(), tokens, tokens + " tokens was not the fund wallet balance");
+            assert.ok(contractEth1 > contractEth2, "ether balance of contract not properly handled");
+            assert.ok(accountEth1 < accountEth2, "ether balance of account not properly handled");
         });
     });
 
@@ -87,6 +111,8 @@ contract('Liquidation', function(accounts) {
     it("Added and removed liquidity", function() {
         var liquidation;
         var fundWallet = accounts[8];
+        var fundWallet2;
+        var fundWallet3;
 
         return Liquidation.deployed().then(function(instance) {
             liquidation = instance;
@@ -95,18 +121,25 @@ contract('Liquidation', function(accounts) {
             console.log("Fund Wallet Ether Balance 1:");
             console.log(web3.eth.getBalance(fundWallet).toNumber());
             return liquidation.sendTransaction({from: fundWallet, value: web3.toWei(10)});
-        }).then(function(result) {
+        }).then(function() {
             console.log("Contract Ether Balance 2:");
             console.log(web3.eth.getBalance(liquidation.address).toNumber());
             console.log("Fund Wallet Ether Balance 2:");
-            console.log(web3.eth.getBalance(fundWallet).toNumber());
-            return liquidation.removeLiquidity(10);
-        }).then(function(result) {
+            fundWallet2 = web3.eth.getBalance(fundWallet).toNumber();
+            console.log(fundWallet2);
+            return liquidation.removeLiquidity(web3.toWei(9));
+        }).then(function() {
+            return(liquidation.fundWallet());
+        }).then(function(wal) {
+            console.log(wal);
+            //console.log(success);
             console.log("Contract Ether Balance 3:");
             console.log(web3.eth.getBalance(liquidation.address).toNumber());
             console.log("Fund Wallet Ether Balance 3:");
-            console.log(web3.eth.getBalance(fundWallet).toNumber());
-
+            fundWallet3 = web3.eth.getBalance(fundWallet).toNumber()
+            console.log(fundWallet3);
+        }).then(function() {
+            assert.notEqual(fundWallet2, fundWallet3, "Remove liquidity did not work");
         });
     });
 });

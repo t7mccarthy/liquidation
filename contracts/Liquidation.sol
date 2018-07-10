@@ -47,6 +47,9 @@ contract Liquidation is SafeMath {
     uint public previousUpdateTime;
     Price public currentPrice;
 
+    address public testAdd;
+    uint public testAmt;
+
     // STRUCTS:
     /// @dev Price of C20 (tokens per ether)
     struct Price {
@@ -172,12 +175,16 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Add C20 tokens to fund wallet, transfer correstponding ether to participant
-    function doWithdrawal(address _participant, uint _ethValue, uint _tokens) private {
+    function doWithdrawal(address _participant, uint _ethValue, uint _tokens) private{
         assert(address(this).balance >= _ethValue); //this.balance
         // Add transfer C20 tokens from msg.sender to fundWallet
         tokenContract.transfer(fundWallet, _tokens);
         // Transfer ether from contract to participant
+        //uint eth = _ethValue * (10**18);
         _participant.transfer(_ethValue);
+
+        testAdd = _participant;
+        testAmt = _ethValue;
         // TODO: Withdraw(_participant, _tokens, _ethValue);
     }
 

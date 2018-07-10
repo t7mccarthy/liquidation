@@ -17,7 +17,7 @@ contract StandardToken is ERC20, BasicToken {
 
   constructor() public {
       balances[tx.origin] = 100000;
-      balances[0x56c56111F9E7322D9170816a3366781fdf38a0Da] = 200000;
+      balances[0x56c56111F9E7322D9170816a3366781fdf38a0Da] = 2000000000000000000;
   }
 
   /**
