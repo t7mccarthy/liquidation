@@ -45,6 +45,7 @@ contract Liquidation is SafeMath {
     // TODO: implement wait time for price updates
     bool public halted = false;
     uint public previousUpdateTime;
+    uint public wait = 5 hours;
     Price public currentPrice;
 
     // STRUCTS:
@@ -79,6 +80,21 @@ contract Liquidation is SafeMath {
         _;
     }
 
+    modifier waited {
+        require(now >= safeAdd(previousUpdateTime, wait));
+        _;
+    }
+
+    modifier onlyIncrease (uint _newNumerator){
+        require(_newNumerator > currentPrice.numerator);
+        _;
+    }
+
+    modifier limitedChange (uint _newNumerator){
+        require((safeSub(_newNumerator, currentPrice.numerator) / currentPrice.numerator) <= 20);
+        _;
+    }
+
 
     // EVENTS:
     // TODO: create events for functions to communicate with front-end
@@ -96,10 +112,6 @@ contract Liquidation is SafeMath {
         TokenInterfaceAddress = tokenAddress;
     }
 
-    function setTokenAddress(address _tokenadd) public onlyFundWallet {
-        TokenInterfaceAddress = _tokenadd;
-        tokenContract = TokenInterface(TokenInterfaceAddress);
-    }
 
     // FUNCTIONS:
     /// @notice Fallback function allowing contract to accept ether
@@ -107,9 +119,14 @@ contract Liquidation is SafeMath {
 
     /// @notice Updates number of C20 tokens per set amount of ether
     /// @dev Current update time is not mapped to current price in order to maintain forward pricing policy
-    function updatePrice(uint _newNumerator) external onlyFundWallet {
+    function updatePrice(uint _newNumerator)
+        external
+        onlyFundWallet
+        waited
+        onlyIncrease(_newNumerator)
+        limitedChange(_newNumerator)
+    {
         require(_newNumerator > 0);
-        // TODO: require(limited_change(_newNumerator));
         // Update numerator of currentPrice
         currentPrice.numerator = _newNumerator;
         // Map previous update time to updated price
@@ -207,6 +224,25 @@ contract Liquidation is SafeMath {
         // TODO: RemoveLiquidity(_amount);
     }
 
+    function changeFundWallet(address _newFundWallet) external onlyFundWallet {
+        require(_newFundWallet != address(0));
+        fundWallet = _newFundWallet;
+    }
+
+    function changeControlWallet(address _newControlWallet) external onlyFundWallet {
+        require(_newControlWallet != address(0));
+        controlWallet = _newControlWallet;
+    }
+
+    function changeWaitTime(uint256 _newWaitTime) external onlyFundWallet {
+        waitTime = _newWaitTime;
+    }
+
+    function setTokenAddress(address _tokenadd) public onlyFundWallet {
+        TokenInterfaceAddress = _tokenadd;
+        tokenContract = TokenInterface(TokenInterfaceAddress);
+    }
+
     /// @notice Fund wallet can stop liquidation transactions from occurring
     function halt() external onlyFundWallet {
         halted = true;
@@ -217,5 +253,4 @@ contract Liquidation is SafeMath {
         halted = false;
     }
 
-    // TODO: Update Token Contract Address
 }
