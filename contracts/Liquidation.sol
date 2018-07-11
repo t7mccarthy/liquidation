@@ -234,8 +234,8 @@ contract Liquidation is SafeMath {
         controlWallet = _newControlWallet;
     }
 
-    function changeWaitTime(uint256 _newWaitTime) external onlyFundWallet {
-        waitTime = _newWaitTime;
+    function changeWait(uint256 _newWait) external onlyFundWallet {
+        wait = _newWait;
     }
 
     function setTokenAddress(address _tokenadd) public onlyFundWallet {
