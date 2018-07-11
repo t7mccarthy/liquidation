@@ -68,6 +68,12 @@ contract Liquidation is SafeMath {
     /// @dev Address mapped to withdrawal
     mapping (address => Withdrawal) public withdrawals;
 
+    //EVENTS:
+    event RemoveLiquidity(uint256 ethAmount);
+    event WithdrawRequest(address indexed participant, uint256 amountTokens);
+    event Withdraw(address indexed participant, uint256 amountTokens, uint256 etherAmount);
+    event PriceUpdate(uint256 numerator, uint256 denominator);
+
     //MODIFIERS:
     // TODO: create modifiers
     modifier onlyFundWallet {
@@ -133,6 +139,7 @@ contract Liquidation is SafeMath {
         prices[previousUpdateTime] = currentPrice;
         // Update previousUpdateTime
         previousUpdateTime = now;
+        PriceUpdate(_newNumerator, currentPrice.denominator);
     }
 
     /// @notice Updates set amount of ether in measure of C20 tokens per set amount of ether
@@ -163,6 +170,7 @@ contract Liquidation is SafeMath {
         tokenContract.transferFrom(msg.sender, this, _tokensToWithdraw);
         // Store requested withdrawal in withdrawal mapping
         withdrawals[msg.sender] = Withdrawal({tokens: _tokensToWithdraw, time: previousUpdateTime});
+        WithdrawRequest(msg.sender, _tokensToWithdraw);
     }
 
     /// @notice Called by user after requesting withdrawal to carry out withdrawal
@@ -200,7 +208,7 @@ contract Liquidation is SafeMath {
         // Transfer ether from contract to participant
         //uint eth = _ethValue * (10**18);
         _participant.transfer(_ethValue);
-        // TODO: Withdraw(_participant, _tokens, _ethValue);
+        Withdraw(_participant, _tokens, _ethValue);
     }
 
     /// @notice Refund tokens to participant, indicate failed transaction
@@ -208,7 +216,7 @@ contract Liquidation is SafeMath {
         assert(address(this).balance < _ethValue); //this.balance
         // Refund tokens to participant
         tokenContract.transfer(_participant, _tokens);
-        // TODO: Withdraw(participant, tokens, 0);
+        Withdraw(_participant, _tokens, 0);
     }
 
     /* /// @notice Managing wallets can transfer ether to contract
@@ -221,7 +229,7 @@ contract Liquidation is SafeMath {
     function removeLiquidity(uint _amount) external onlyFundWallet notHalted {
         //require(_amount <= address(this).balance); //this.balance
         fundWallet.transfer(_amount);
-        // TODO: RemoveLiquidity(_amount);
+        RemoveLiquidity(_amount);
     }
 
     function changeFundWallet(address _newFundWallet) external onlyFundWallet {
