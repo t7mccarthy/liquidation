@@ -89,7 +89,7 @@ contract('Liquidation', function(accounts) {
                 from: accounts[6]
             });
         }).then(function(result) {
-            return liquidation.updatePrice(2, {
+            return liquidation.updatePrice(1.1, {
                 from: accounts[8]
             });
         }).then(function(result) {
@@ -155,7 +155,7 @@ contract('Liquidation', function(accounts) {
                 from: accounts[1]
             });
         }).then(function(result) {
-            return liquidation.updatePrice(3, {
+            return liquidation.updatePrice(1.2, {
                 from: accounts[8]
             });
         }).then(function(result) {

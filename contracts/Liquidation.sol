@@ -91,7 +91,7 @@ contract Liquidation is SafeMath {
     }
 
     modifier limitedChange (uint _newNumerator){
-        require((safeSub(_newNumerator, currentPrice.numerator) / currentPrice.numerator) <= 20);
+        require(safeMul(safeSub(_newNumerator, currentPrice.numerator) / currentPrice.numerator, 100) <= 20);
         _;
     }
 
