@@ -75,6 +75,11 @@ contract Liquidation is SafeMath {
         _;
     }
 
+    modifier onlyManagingWallets {
+        require(msg.sender == controlWallet || msg.sender == fundWallet);
+        _;
+    }
+
     modifier notHalted {
         require(!halted);
         _;
@@ -121,7 +126,7 @@ contract Liquidation is SafeMath {
     /// @dev Current update time is not mapped to current price in order to maintain forward pricing policy
     function updatePrice(uint _newNumerator)
         external
-        onlyFundWallet
+        onlyManagingWallets
         waited
         onlyIncrease(_newNumerator)
         limitedChange(_newNumerator)
@@ -211,14 +216,8 @@ contract Liquidation is SafeMath {
         // TODO: Withdraw(participant, tokens, 0);
     }
 
-    /* /// @notice Managing wallets can transfer ether to contract
-    function addLiquidity() external payable {
-        require(msg.value > 0);
-        // TODO: AddLiquidity(msg.value);
-    } */
-
     /// @notice Managing wallets can transfer ether from contract to fund wallet
-    function removeLiquidity(uint _amount) external onlyFundWallet notHalted {
+    function removeLiquidity(uint _amount) external onlyManagingWallets notHalted {
         //require(_amount <= address(this).balance); //this.balance
         fundWallet.transfer(_amount);
         // TODO: RemoveLiquidity(_amount);
