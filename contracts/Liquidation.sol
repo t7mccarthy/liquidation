@@ -24,6 +24,7 @@ contract TokenInterface {
   function balanceOf(address _owner) public view returns (uint256 balance);
   function transfer(address _to, uint256 _value) public returns (bool);
   function transferFrom(address from, address to, uint256 value) public returns (bool);
+  function allowance(address _owner, address _spender) constant returns (uint256 remaining);
 }
 
 
@@ -95,6 +96,11 @@ contract Liquidation is SafeMath {
     modifier limitedChange (uint _newNumerator){
         require(safeMul(safeSub(_newNumerator, currentPrice.numerator) / currentPrice.numerator, 100) <= 20);
         _;
+    }
+
+    modifier onlyPayloadSize(uint numWords) {
+       assert(msg.data.length >= numWords * 32 + 4);
+       _;
     }
 
     // CONSTRUCTOR:
