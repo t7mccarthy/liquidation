@@ -170,7 +170,7 @@ contract Liquidation is SafeMath {
         tokenContract.transferFrom(msg.sender, this, _tokensToWithdraw);
         // Store requested withdrawal in withdrawal mapping
         withdrawals[msg.sender] = Withdrawal({tokens: _tokensToWithdraw, time: previousUpdateTime});
-        WithdrawRequest(msg.sender, _tokensToWithdraw);
+        emit WithdrawRequest(msg.sender, _tokensToWithdraw);
     }
 
     /// @notice Called by user after requesting withdrawal to carry out withdrawal
@@ -207,7 +207,7 @@ contract Liquidation is SafeMath {
         tokenContract.transfer(fundWallet, _tokens);
         // Transfer ether from contract to participant
         _participant.transfer(_ethValue);
-        Withdraw(_participant, _tokens, _ethValue);
+        emit Withdraw(_participant, _tokens, _ethValue);
     }
 
     /// @notice Refund tokens to participant, indicate failed transaction
@@ -215,14 +215,14 @@ contract Liquidation is SafeMath {
         assert(address(this).balance < _ethValue); //this.balance
         // Refund tokens to participant
         tokenContract.transfer(_participant, _tokens);
-        Withdraw(_participant, _tokens, 0);
+        emit Withdraw(_participant, _tokens, 0);
     }
 
     /// @notice Managing wallets can transfer ether from contract to fund wallet
     function removeLiquidity(uint _amount) external onlyManagingWallets notHalted {
         //require(_amount <= address(this).balance); //this.balance
         fundWallet.transfer(_amount);
-        RemoveLiquidity(_amount);
+        emit RemoveLiquidity(_amount);
     }
 
     function changeFundWallet(address _newFundWallet) external onlyFundWallet {
