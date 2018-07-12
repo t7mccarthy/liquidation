@@ -90,16 +90,6 @@ contract Liquidation is SafeMath {
         _;
     }
 
-    modifier waited {
-        require(now >= safeAdd(previousUpdateTime, wait));
-        _;
-    }
-
-    modifier onlyIncrease (uint _newNumerator){
-        require(_newNumerator > currentPrice.numerator);
-        _;
-    }
-
     modifier limitedChange (uint _newNumerator){
         require((safeSub(_newNumerator, currentPrice.numerator) / currentPrice.numerator) <= 20);
         _;
@@ -129,10 +119,9 @@ contract Liquidation is SafeMath {
     function updatePrice(uint _newNumerator)
         external
         onlyManagingWallets
-        //waited
-        onlyIncrease(_newNumerator)
         limitedChange(_newNumerator)
     {
+        require(controlWalletWait(msg.sender) == true);
         require(_newNumerator > 0);
         // Update numerator of currentPrice
         currentPrice.numerator = _newNumerator;
@@ -141,6 +130,13 @@ contract Liquidation is SafeMath {
         // Update previousUpdateTime
         previousUpdateTime = now;
         PriceUpdate(_newNumerator, currentPrice.denominator);
+    }
+
+    function controlWalletWait(address _sender) private returns(bool){
+        if((_sender == controlWallet) && (now < safeAdd(previousUpdateTime, wait))){
+                return false;
+        }
+        return true;
     }
 
     /// @notice Updates set amount of ether in measure of C20 tokens per set amount of ether
@@ -219,7 +215,7 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Managing wallets can transfer ether from contract to fund wallet
-    function removeLiquidity(uint _amount) external onlyManagingWallets notHalted {
+    function removeLiquidity(uint _amount) external onlyManagingWallets {
         //require(_amount <= address(this).balance); //this.balance
         fundWallet.transfer(_amount);
         emit RemoveLiquidity(_amount);
