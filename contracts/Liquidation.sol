@@ -33,12 +33,12 @@ contract TokenInterface {
 contract Liquidation is SafeMath {
     //using SafeMath for uint256;
 
-    // Address of C20 contract on ethereum
+    // Address of token contract
     address public TokenInterfaceAddress;
     TokenInterface public tokenContract;
 
     // PUBLIC VARIABLES:
-    /// @dev Managing wallets from C20 contract
+    /// @dev Managing wallets of token contract
     address public fundWallet;
     address public controlWallet;
 
@@ -49,7 +49,7 @@ contract Liquidation is SafeMath {
     Price public currentPrice;
 
     // STRUCTS:
-    /// @dev Price of C20 (tokens per ether)
+    /// @dev Price of token (tokens per ether)
     struct Price {
         uint numerator;
         uint denominator;
@@ -75,7 +75,6 @@ contract Liquidation is SafeMath {
     event PriceUpdate(uint256 numerator, uint256 denominator);
 
     //MODIFIERS:
-    // TODO: create modifiers
     modifier onlyFundWallet {
         require(msg.sender == fundWallet);
         _;
@@ -105,10 +104,6 @@ contract Liquidation is SafeMath {
         require((safeSub(_newNumerator, currentPrice.numerator) / currentPrice.numerator) <= 20);
         _;
     }
-
-
-    // EVENTS:
-    // TODO: create events for functions to communicate with front-end
 
     // CONSTRUCTOR:
     constructor(address fundWalletInput, address controlWalletInput, uint priceNumeratorInput, address tokenAddress) public {
@@ -160,9 +155,8 @@ contract Liquidation is SafeMath {
         previousUpdateTime = now;
     }
 
-    /// @notice Gets C20 token balance of participant from C20 contract
+    /// @notice Gets token balance of participant from token contract
     function getTokenBalance(address _participant) public view returns (uint balance) {
-        // TODO: Get balance from balanceOf function in C20 contract
         return tokenContract.balanceOf(_participant);
     }
 
@@ -187,10 +181,10 @@ contract Liquidation is SafeMath {
         // previousUpdateTime when request was made
         uint requestTime = withdrawals[msg.sender].time;
         // Next price that was set after the request (maintaining forward pricing policy)
-        Price memory priceAfterRequest = prices[requestTime];
+        Price storage priceAfterRequest = prices[requestTime];
         // Price must have been set after requestTime
         require(priceAfterRequest.numerator > 0);
-        // Convert number of C20 tokens in liquidation request to ether
+        // Convert number of tokens in liquidation request to ether
         uint256 ethValue = safeMul(tokens, priceAfterRequest.denominator) / priceAfterRequest.numerator;
         // Reset mapping storing requested withdrawals
         withdrawals[msg.sender].tokens = 0;
@@ -206,13 +200,12 @@ contract Liquidation is SafeMath {
         }
     }
 
-    /// @notice Add C20 tokens to fund wallet, transfer correstponding ether to participant
+    /// @notice Add tokens to fund wallet, transfer correstponding ether to participant
     function doWithdrawal(address _participant, uint _ethValue, uint _tokens) private{
         assert(address(this).balance >= _ethValue); //this.balance
-        // Add transfer C20 tokens from msg.sender to fundWallet
+        // Add transfer tokens from msg.sender to fundWallet
         tokenContract.transfer(fundWallet, _tokens);
         // Transfer ether from contract to participant
-        //uint eth = _ethValue * (10**18);
         _participant.transfer(_ethValue);
         Withdraw(_participant, _tokens, _ethValue);
     }
