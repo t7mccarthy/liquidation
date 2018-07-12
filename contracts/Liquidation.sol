@@ -68,6 +68,8 @@ contract Liquidation is SafeMath {
     /// @dev Address mapped to withdrawal
     mapping (address => Withdrawal) public withdrawals;
 
+    mapping (address => mapping (address => uint256)) allowed;
+
     //EVENTS:
     event RemoveLiquidity(uint256 ethAmount);
     event WithdrawRequest(address indexed participant, uint256 amountTokens);
