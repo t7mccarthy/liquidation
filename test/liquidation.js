@@ -51,6 +51,155 @@ contract('Liquidation', function(accounts) {
         });  
     });
 
+    // it("failWithdrawal", function() {
+    //     var liquidation;
+    //     var standardToken;
+    //     var tokenAddress;
+    //     var balance1;
+    //     var balanceContract;
+    //     var tokens = 200000000000000000000000000000000000000000000000000;
+    //     var contractEth1;
+    //     var contractEth2;
+    //     var accountEth1;
+    //     var accountEth2;
+    //     var ac1bal;
+    //
+    //     return Liquidation.deployed().then(function(instance) {
+    //         liquidation = instance;
+    //         return StandardToken.deployed();
+    //     }).then(function(instance) {
+    //         standardToken = instance;
+    //         tokenAddress = standardToken.address;
+    //         return liquidation.setTokenAddress(tokenAddress, {
+    //             from: accounts[8]
+    //         });
+    //     }).then(function() {
+    //         return liquidation.getTokenBalance.call(accounts[6]);
+    //     }).then(function(balance) {
+    //         console.log("balance check account 6: ")
+    //         console.log(balance)
+    //         return standardToken.approve(liquidation.address, tokens, {
+    //             from: accounts[6]
+    //         });
+    //     }).then(function(result) {
+    //         return liquidation.sendTransaction({
+    //             from: accounts[2],
+    //             value: web3.toWei(10)
+    //         });
+    //     }).then(function(result) {
+    //         console.log("Contract eth:");
+    //         contractEth1 = web3.eth.getBalance(liquidation.address).toNumber();
+    //         console.log(contractEth1);
+    //         console.log("Account 1 eth:");
+    //         accountEth1 = web3.eth.getBalance(accounts[1]).toNumber();
+    //         console.log(accountEth1);
+    //         return liquidation.requestWithdrawal(tokens, {
+    //             from: accounts[6]
+    //         });
+    //     }).then(function(result) {
+    //         return liquidation.withdraw({
+    //             from: accounts[6]
+    //         });
+    //     }).then(function() {
+    //         return liquidation.getTokenBalance.call(accounts[1]);
+    //     }).then(function(balance) {
+    //         console.log("balance check account 6: ")
+    //         console.log(balance)
+    //         balance6 = balance;
+    //         return liquidation.getTokenBalance.call(accounts[8]);
+    //     }).then(function(balance) {
+    //         console.log("balance check fund wallet: ")
+    //         console.log(balance)
+    //         console.log("Contract eth:");
+    //         contractEth2 = web3.eth.getBalance(liquidation.address).toNumber();
+    //         console.log(contractEth2);
+    //         console.log("Account 1 eth:");
+    //         accountEth2 = web3.eth.getBalance(accounts[6]).toNumber();
+    //         console.log(accountEth2);
+    //         balanceContract = balance;
+    //     });
+    // });
+
+    it("failwithdrawal", function() {
+        var liquidation;
+        var standardToken;
+        var tokenAddress;
+        var balance1;
+        var balanceContract;
+        var tokens = 200000000000000000000000000000000000000000000000000;
+        var contractEth1;
+        var contractEth2;
+        var accountEth1;
+        var accountEth2;
+        var ac1bal;
+
+        return Liquidation.deployed().then(function(instance) {
+            liquidation = instance;
+            return StandardToken.deployed();
+        }).then(function(instance) {
+            standardToken = instance;
+            tokenAddress = standardToken.address;
+            return liquidation.setTokenAddress(tokenAddress, {
+                from: accounts[8]
+            });
+        }).then(function() {
+            return liquidation.getTokenBalance.call(accounts[6]);
+        }).then(function(balance) {
+            console.log("balance check account 6: ")
+            ac1bal = balance;
+            console.log(balance)
+            console.log("problem about to happen!");
+            return standardToken.approve(liquidation.address, tokens, {
+                from: accounts[6]
+            });
+        }).then(function(result) {
+            return liquidation.sendTransaction({
+                from: accounts[2],
+                value: web3.toWei(10)
+            });
+        }).then(function(result) {
+            console.log("Contract eth:");
+            contractEth1 = web3.eth.getBalance(liquidation.address).toNumber();
+            console.log(contractEth1);
+            console.log("Account 1 eth:");
+            accountEth1 = web3.eth.getBalance(accounts[6]).toNumber();
+            console.log(accountEth1);
+            return liquidation.requestWithdrawal(tokens, {
+                from: accounts[6]
+            });
+        }).then(function(result) {
+            console.log("next problem about to happen!");
+            return liquidation.withdraw({
+                from: accounts[6]
+            });
+        }).then(function() {
+            return liquidation.getTokenBalance.call(accounts[6]);
+        }).then(function(balance) {
+            console.log("balance check account 6: ")
+            console.log(balance)
+            balance6 = balance;
+            return liquidation.getTokenBalance.call(accounts[8]);
+        }).then(function(balance) {
+            console.log("balance check fund wallet: ")
+            console.log(balance)
+            console.log("Contract eth:");
+            contractEth2 = web3.eth.getBalance(liquidation.address).toNumber();
+            console.log(contractEth2);
+            console.log("Account 1 eth:");
+            accountEth2 = web3.eth.getBalance(accounts[6]).toNumber();
+            console.log(accountEth2);
+            balanceContract = balance;
+        }).then(function() {
+            console.log(contractEth1 + " becomes " + contractEth2);
+            console.log(accountEth1 + " becomes " + accountEth2);
+            assert.equal(balance6.valueOf(), ac1bal.valueOf(), "Tokens were not correctly refunded");
+            // assert.equal(balanceContract.valueOf(), tokens, tokens + " tokens was not the fund wallet balance");
+            // assert.ok(contractEth1 > contractEth2, "ether balance of contract not properly handled");
+            // assert.ok(accountEth1 < accountEth2, "ether balance of account not properly handled");
+        });
+    });
+
+
     it("Liquidate tokens from second account", function() {
         var liquidation;
         var standardToken;
