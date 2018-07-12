@@ -1,0 +1,31 @@
+{
+  "name": "liquidation",
+  "version": "1.0.0",
+  "description": "Smart contract for liquidating ERC20 tokens to ether",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/t7mccarthy/liquidation.git"
+  },
+  "keywords": [
+    "C20",
+    "liquidation",
+    "ethereum",
+    "smart contract",
+  ],
+  "author": "Tom McCarthy, Pascha Hao",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/t7mccarthy/liquidation/issues"
+  },
+  "homepage": "https://github.com/t7mccarthy/liquidation#readme",
+  "dependencies": {
+    "solc": "^0.4.22"
+  }
+}
