@@ -118,8 +118,9 @@ contract Liquidation is SafeMath {
         fundWallet = fundWalletInput;
         controlWallet = controlWalletInput;
         currentPrice = Price(priceNumeratorInput, 1000);
-        previousUpdateTime = now;
+        previousUpdateTime = 0;
         prices[previousUpdateTime] = currentPrice;
+        previousUpdateTime = now;
         TokenInterfaceAddress = tokenAddress;
     }
 
@@ -133,7 +134,7 @@ contract Liquidation is SafeMath {
     function updatePrice(uint _newNumerator)
         external
         onlyManagingWallets
-        waited
+        //waited
         onlyIncrease(_newNumerator)
         limitedChange(_newNumerator)
     {
