@@ -70,19 +70,25 @@ contract Liquidation is SafeMath {
     mapping (address => Withdrawal) public withdrawals;
 
     mapping (address => mapping (address => uint256)) allowed;
+    //maps addresses:
+    mapping (address => bool) public whitelist;
 
     //EVENTS:
     event RemoveLiquidity(uint256 ethAmount);
     event WithdrawRequest(address indexed participant, uint256 amountTokens);
     event Withdraw(address indexed participant, uint256 amountTokens, uint256 etherAmount);
     event PriceUpdate(uint256 numerator, uint256 denominator);
+    event Whitelist(address indexed participant);
 
     //MODIFIERS:
     modifier onlyFundWallet {
         require(msg.sender == fundWallet);
         _;
     }
-
+    modifier onlyWhitelist {
+        require(whitelist[msg.sender] == true);
+        _;
+    }
     modifier onlyManagingWallets {
         require(msg.sender == controlWallet || msg.sender == fundWallet);
         _;
@@ -140,6 +146,10 @@ contract Liquidation is SafeMath {
         PriceUpdate(_newNumerator, currentPrice.denominator);
     }
 
+    function addToWhitelist (address _address) onlyOwner {
+        whitelist[_address] = true;
+    }
+
     function controlWalletWait(address _sender) private returns(bool){
         if((_sender == controlWallet) && (now < safeAdd(previousUpdateTime, wait))){
                 return false;
@@ -165,9 +175,10 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Allows user to request a certain amount of tokens to liquidate
-    function requestWithdrawal(uint _tokensToWithdraw) external notHalted {//onlyWhitelist {
+    function requestWithdrawal(uint _tokensToWithdraw) external notHalted {
         require(_tokensToWithdraw > 0);
         require(getTokenBalance(msg.sender) >= _tokensToWithdraw);
+        /* require(whitelist[msg.sender] == true); */
         // No outstanding withdrawals can exist
         require(withdrawals[msg.sender].tokens == 0);
 
@@ -205,6 +216,7 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Add tokens to fund wallet, transfer correstponding ether to participant
+    // TODO:  onlyPayloadSize
     function doWithdrawal(address _participant, uint _ethValue, uint _tokens) private{
         assert(address(this).balance >= _ethValue); //this.balance
         // Add transfer tokens from msg.sender to fundWallet
