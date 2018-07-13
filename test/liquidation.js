@@ -207,11 +207,12 @@ contract('Liquidation', function(accounts) {
         });
     });
 
-    it("testing adding to whitelist"), function() {
+    it("testing adding to whitelist", async function() {
       var liquidation;
       var controlWallet = accounts[7];
-      var account = accounts[9];
       var whitelistaddress;
+      var account;
+      var account2;
 
       return Liquidation.deployed().then(function(instance) {
         liquidation = instance;
@@ -220,13 +221,15 @@ contract('Liquidation', function(accounts) {
       });then(function(result) {
         return liquidation.addToWhitelist(controlWallet);
       }).then(function() {
-        return liquiation.controlWallet();
-      }).then(function(result) {
-        whitelistaddress = result;
+        return liquidation.account();
+      }).then(async function(instance) {
+        liquidation = instance;
+        account = await liquidation.whitelist.call(controlWallet);
+        account2 = await liquidation.whitelest.call(accounts[9]);
       }).then(function() {
-        assert.notEqual(whitelist[account], whitelist[whitelistaddress], "didn't work :/")
-      })
-    }
+        assert.notEqual(account, account2, "didn't work :/")
+      });
+    });
 
     it("fundWallet can be updated", function() {
         var liquidation;
