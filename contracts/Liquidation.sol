@@ -152,6 +152,13 @@ contract Liquidation is SafeMath {
 
     function addToWhitelist (address _address) public {
         whitelist[_address] = true;
+        emit Whitelist(_address);
+    }
+    //adding batches of address to the whitelist?
+    function whitelistAddress (address[] _addresses) public {
+        for (uint i = 0; i < _addresses.length; i++) {
+            whitelist[_addresses[i]] = true;
+        }
     }
 
     function controlWalletWait(address _sender) private returns(bool){
