@@ -207,6 +207,27 @@ contract('Liquidation', function(accounts) {
         });
     });
 
+    it("testing adding to whitelist"), function() {
+      var liquidation;
+      var controlWallet = accounts[7];
+      var account = accounts[9];
+      var whitelistaddress;
+
+      return Liquidation.deployed().then(function(instance) {
+        liquidation = instance;
+      }).then(function() {
+        return liquidation.controlWallet();
+      });then(function(result) {
+        return liquidation.addToWhitelist(controlWallet);
+      }).then(function() {
+        return liquiation.controlWallet();
+      }).then(function(result) {
+        whitelistaddress = result;
+      }).then(function() {
+        assert.notEqual(whitelist[account], whitelist[whitelistaddress], "didn't work :/")
+      })
+    }
+
     it("fundWallet can be updated", function() {
         var liquidation;
         var fundWallet = accounts[8];
