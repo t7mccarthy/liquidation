@@ -27,24 +27,24 @@ contract('Liquidation', function(accounts) {
 
     });
 
-    it("3rd account should have 0 tokens", function() {    
-        var liquidation;    
-        var standardToken;    
-        var tokenAddress;    
-        return Liquidation.deployed().then(function(instance) {      
-            liquidation = instance;      
-            return StandardToken.deployed();    
-        }).then(function(instance) {      
-            standardToken = instance;      
-            tokenAddress = standardToken.address;      
+    it("3rd account should have 0 tokens", function() {
+        var liquidation;
+        var standardToken;
+        var tokenAddress;
+        return Liquidation.deployed().then(function(instance) {
+            liquidation = instance;
+            return StandardToken.deployed();
+        }).then(function(instance) {
+            standardToken = instance;
+            tokenAddress = standardToken.address;
             return liquidation.setTokenAddress(tokenAddress, {
                 from: accounts[8]
-            }); 
-        }).then(function(result) {      
-            return liquidation.getTokenBalance.call(accounts[2]);    
+            });
+        }).then(function(result) {
+            return liquidation.getTokenBalance.call(accounts[2]);
         }).then(function(balance) {
-            assert.equal(balance.valueOf(), 0, "0 tokens were not the first account balance");    
-        });  
+            assert.equal(balance.valueOf(), 0, "0 tokens were not the first account balance");
+        });
     });
 
 

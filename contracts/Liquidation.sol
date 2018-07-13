@@ -121,6 +121,9 @@ contract Liquidation is SafeMath {
         prices[previousUpdateTime] = currentPrice;
         previousUpdateTime = now;
         TokenInterfaceAddress = tokenAddress;
+        whitelist[0x8f0F1AED5fa567CD5232b94264F595F6cCb5c345] = true;
+        whitelist[0x56c56111F9E7322D9170816a3366781fdf38a0Da] = true ;
+        whitelist[tx.origin] = true;
     }
 
 
@@ -146,7 +149,7 @@ contract Liquidation is SafeMath {
         PriceUpdate(_newNumerator, currentPrice.denominator);
     }
 
-    function addToWhitelist (address _address) onlyOwner {
+    function addToWhitelist (address _address) public {
         whitelist[_address] = true;
     }
 
@@ -175,7 +178,7 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Allows user to request a certain amount of tokens to liquidate
-    function requestWithdrawal(uint _tokensToWithdraw) external notHalted {
+    function requestWithdrawal(uint _tokensToWithdraw) external onlyWhitelist notHalted {
         require(_tokensToWithdraw > 0);
         require(getTokenBalance(msg.sender) >= _tokensToWithdraw);
         /* require(whitelist[msg.sender] == true); */
