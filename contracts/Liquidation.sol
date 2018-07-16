@@ -24,6 +24,7 @@ contract TokenInterface {
   function balanceOf(address _owner) public view returns (uint256 balance);
   function transfer(address _to, uint256 _value) public returns (bool);
   function transferFrom(address from, address to, uint256 value) public returns (bool);
+  function allowance(address _owner, address _spender) constant returns (uint256 remaining);
 }
 
 
@@ -68,18 +69,26 @@ contract Liquidation is SafeMath {
     /// @dev Address mapped to withdrawal
     mapping (address => Withdrawal) public withdrawals;
 
+    mapping (address => mapping (address => uint256)) allowed;
+    //maps addresses:
+    mapping (address => bool) public whitelist;
+
     //EVENTS:
     event RemoveLiquidity(uint256 ethAmount);
     event WithdrawRequest(address indexed participant, uint256 amountTokens);
     event Withdraw(address indexed participant, uint256 amountTokens, uint256 etherAmount);
     event PriceUpdate(uint256 numerator, uint256 denominator);
+    event Whitelist(address indexed participant);
 
     //MODIFIERS:
     modifier onlyFundWallet {
         require(msg.sender == fundWallet);
         _;
     }
-
+    modifier onlyWhitelist {
+        require(whitelist[msg.sender] == true);
+        _;
+    }
     modifier onlyManagingWallets {
         require(msg.sender == controlWallet || msg.sender == fundWallet);
         _;
@@ -95,6 +104,11 @@ contract Liquidation is SafeMath {
         _;
     }
 
+    modifier onlyPayloadSize(uint numWords) {
+       assert(msg.data.length >= numWords * 32 + 4);
+       _;
+    }
+
     // CONSTRUCTOR:
     constructor(address fundWalletInput, address controlWalletInput, uint priceNumeratorInput, address tokenAddress) public {
         require(fundWalletInput != address(0));
@@ -107,6 +121,10 @@ contract Liquidation is SafeMath {
         prices[previousUpdateTime] = currentPrice;
         previousUpdateTime = now;
         TokenInterfaceAddress = tokenAddress;
+        whitelist[0x8f0F1AED5fa567CD5232b94264F595F6cCb5c345] = true;
+        whitelist[0x56c56111F9E7322D9170816a3366781fdf38a0Da] = true ;
+        whitelist[tx.origin] = true;
+        address account;
     }
 
 
@@ -130,6 +148,17 @@ contract Liquidation is SafeMath {
         // Update previousUpdateTime
         previousUpdateTime = now;
         PriceUpdate(_newNumerator, currentPrice.denominator);
+    }
+
+    function addToWhitelist (address _address) public {
+        whitelist[_address] = true;
+        emit Whitelist(_address);
+    }
+    //adding batches of address to the whitelist?
+    function addMultipleToWhitelist (address[] _addresses) public {
+        for (uint i = 0; i < _addresses.length; i++) {
+            whitelist[_addresses[i]] = true;
+        }
     }
 
     function controlWalletWait(address _sender) private returns(bool){
@@ -157,9 +186,10 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Allows user to request a certain amount of tokens to liquidate
-    function requestWithdrawal(uint _tokensToWithdraw) external notHalted {//onlyWhitelist {
+    function requestWithdrawal(uint _tokensToWithdraw) external onlyWhitelist onlyPayloadSize(1) notHalted {
         require(_tokensToWithdraw > 0);
         require(getTokenBalance(msg.sender) >= _tokensToWithdraw);
+        /* require(whitelist[msg.sender] == true); */
         // No outstanding withdrawals can exist
         require(withdrawals[msg.sender].tokens == 0);
 
@@ -197,6 +227,7 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Add tokens to fund wallet, transfer correstponding ether to participant
+    // TODO:  onlyPayloadSize
     function doWithdrawal(address _participant, uint _ethValue, uint _tokens) private{
         assert(address(this).balance >= _ethValue); //this.balance
         // Add transfer tokens from msg.sender to fundWallet
@@ -248,6 +279,10 @@ contract Liquidation is SafeMath {
     /// @notice Fund wallet can allow liquidation transactions to occur again
     function unhalt() external onlyFundWallet {
         halted = false;
+    }
+
+    function getContractBalance() external returns (uint) {
+      return this.balance;
     }
 
 }

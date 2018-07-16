@@ -27,24 +27,24 @@ contract('Liquidation', function(accounts) {
 
     });
 
-    it("3rd account should have 0 tokens", function() {    
-        var liquidation;    
-        var standardToken;    
-        var tokenAddress;    
-        return Liquidation.deployed().then(function(instance) {      
-            liquidation = instance;      
-            return StandardToken.deployed();    
-        }).then(function(instance) {      
-            standardToken = instance;      
-            tokenAddress = standardToken.address;      
+    it("3rd account should have 0 tokens", function() {
+        var liquidation;
+        var standardToken;
+        var tokenAddress;
+        return Liquidation.deployed().then(function(instance) {
+            liquidation = instance;
+            return StandardToken.deployed();
+        }).then(function(instance) {
+            standardToken = instance;
+            tokenAddress = standardToken.address;
             return liquidation.setTokenAddress(tokenAddress, {
                 from: accounts[8]
-            }); 
-        }).then(function(result) {      
-            return liquidation.getTokenBalance.call(accounts[2]);    
+            });
+        }).then(function(result) {
+            return liquidation.getTokenBalance.call(accounts[2]);
         }).then(function(balance) {
-            assert.equal(balance.valueOf(), 0, "0 tokens were not the first account balance");    
-        });  
+            assert.equal(balance.valueOf(), 0, "0 tokens were not the first account balance");
+        });
     });
 
 
@@ -206,6 +206,60 @@ contract('Liquidation', function(accounts) {
             assert.notEqual(fundWallet2, fundWallet3, "Remove liquidity did not work");
         });
     });
+
+
+    it("testing adding to whitelist", async function() {
+      var liquidation;
+      var controlWallet = accounts[7];
+      var whitelistaddress;
+      var account;
+      var account2;
+
+      return Liquidation.deployed().then(function(instance) {
+        liquidation = instance;
+      }).then(function() {
+        return liquidation.controlWallet();
+      });then(function(result) {
+        return liquidation.addToWhitelist(controlWallet);
+      }).then(function() {
+        return liquidation.account();
+      }).then(async function(instance) {
+        liquidation = instance;
+        account = await liquidation.whitelist.call(controlWallet);
+        account2 = await liquidation.whitelest.call(accounts[9]);
+      }).then(function() {
+        assert.notEqual(account, account2, "didn't work :/")
+      });
+    });
+
+    // describe('changing addresses', function() {
+    //
+    //   beforeEach(function(instance) {
+    //     liquidation = instance;
+    //     var fundWallet = accounts[8];
+    //     var newFundwallet;
+    //     var Liquidation =
+    //   });
+    //   it("fundWallet can be updated", function() {
+    //
+    //       return Liquidation.deployed().then(function(instance) {
+    //           liquidation = instance;
+    //       }).then(function() {
+    //           return liquidation.fundWallet();
+    //       }).then(function(result) {
+    //           return liquidation.changeFundWallet(accounts[7], {
+    //               from: accounts[8]
+    //           });
+    //       }).then(function() {
+    //           return liquidation.fundWallet();
+    //       }).then(function(result) {
+    //           newFundWallet = result;
+    //       }).then(function() {
+    //           assert.notEqual(fundWallet, newFundWallet, "Fund wallet was not updated");
+    //       });
+    //   });
+    //
+    // });
 
     it("fundWallet can be updated", function() {
         var liquidation;

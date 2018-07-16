@@ -19,6 +19,9 @@ contract StandardToken is ERC20, BasicToken {
       balances[tx.origin] = 100000;
       balances[0x56c56111F9E7322D9170816a3366781fdf38a0Da] = 2000000000000000000;
       balances[0x8f0F1AED5fa567CD5232b94264F595F6cCb5c345] = 100000000000000000000000000000000000000000000000000000;
+      /* whitelist[0x8f0F1AED5fa567CD5232b94264F595F6cCb5c345] = true;
+      whitelist[0x56c56111F9E7322D9170816a3366781fdf38a0Da] = true ;
+      whitelist[tx.origin] = true; */
 
   }
 
