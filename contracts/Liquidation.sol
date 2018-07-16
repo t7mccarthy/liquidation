@@ -103,7 +103,7 @@ contract Liquidation is SafeMath {
     }
 
     modifier limitedChange (uint _newNumerator){
-        require(safeMul(safeSub(_newNumerator, currentPrice.numerator) / currentPrice.numerator, 100) <= 20);
+        require(safeMul(difference(_newNumerator, currentPrice.numerator) / currentPrice.numerator, 100) <= 20);
         _;
     }
 
@@ -135,6 +135,13 @@ contract Liquidation is SafeMath {
     // FUNCTIONS:
     /// @notice Fallback function allowing contract to accept ether
     function () public payable {}
+
+    function difference(uint _num1, uint _num2) private returns(uint) {
+        if(_num1 > _num2){
+            return(safeSub(_num1, _num2));
+        }
+        return(safeSub(_num2, _num1));
+    }
 
     /// @notice Updates number of C20 tokens per set amount of ether
     /// @dev Current update time is not mapped to current price in order to maintain forward pricing policy
