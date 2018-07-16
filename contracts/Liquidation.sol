@@ -205,7 +205,7 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Called by user after requesting withdrawal to carry out withdrawal
-    function withdraw() external notHalted {//onlyWhitelist {
+    function withdraw() external notHalted  onlyPayloadSize(0){//onlyWhitelist {
         uint tokens = withdrawals[msg.sender].tokens;
         // Withdrawal must have been requested
         require(tokens > 0);
@@ -233,7 +233,7 @@ contract Liquidation is SafeMath {
 
     /// @notice Add tokens to fund wallet, transfer correstponding ether to participant
     // TODO:  onlyPayloadSize
-    function doWithdrawal(address _participant, uint _ethValue, uint _tokens) private{
+    function doWithdrawal(address _participant, uint _ethValue, uint _tokens) private {
         assert(address(this).balance >= _ethValue); //this.balance
         // Add transfer tokens from msg.sender to fundWallet
         tokenContract.transfer(fundWallet, _tokens);
@@ -252,7 +252,7 @@ contract Liquidation is SafeMath {
         emit Withdraw(_participant, _tokens, 0);
     }
 
-    function claimTokens(address _token) external onlyFundWallet {
+    function claimTokens(address _token) external onlyFundWallet onlyPayloadSize(1) {
         require(_token != address(0));
         TokenInterface token = TokenInterface(_token);
         uint256 availableBalance = token.balanceOf(this);
