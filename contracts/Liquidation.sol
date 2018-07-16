@@ -177,7 +177,7 @@ contract Liquidation is SafeMath {
         // previousUpdateTime when request was made
         uint requestTime = withdrawals[msg.sender].time;
         // Next price that was set after the request (maintaining forward pricing policy)
-        Price storage priceAfterRequest = prices[requestTime];
+        Price memory priceAfterRequest = prices[requestTime];
         // Price must have been set after requestTime
         require(priceAfterRequest.numerator > 0);
         // Convert number of tokens in liquidation request to ether
