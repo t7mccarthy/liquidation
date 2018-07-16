@@ -229,11 +229,40 @@ contract('Liquidation', function(accounts) {
       }).then(async function(instance) {
         liquidation = instance;
         account = await liquidation.whitelist.call(controlWallet);
-        account2 = await liquidation.whitelest.call(accounts[9]);
+        account2 = await liquidation.whitelist.call(accounts[9]);
+        console.log(liquidation.whitelist.call(controlWallet));
       }).then(function() {
         assert.notEqual(account, account2, "didn't work :/")
       });
     });
+
+    // it("testing adding several to whitelist", async function() {
+    //   var liquidation;
+    //   var controlWallet = accounts[7];
+    //   var whitelistaddress;
+    //   var account;
+    //   var account2;
+    //   var account3;
+    //
+    //   return Liquidation.deployed().then(function(instance) {
+    //     liquidation = instance;
+    //   }).then(function() {
+    //     return liquidation.controlWallet();
+    //   });then(function(result) {
+    //     return liquidation.addMultipleToWhitelist(account, account2, account3);
+    //   }).then(function() {
+    //     return liquidation.account();
+    //   }).then(async function(instance) {
+    //     liquidation = instance;
+    //     account = await liquidation.whitelist.call(controlWallet);
+    //     account2 = await liquidation.whitelist.call(accounts[9]);
+    //     account3 = await liquidation.whitelist.call(accounts[8])
+    //   }).then(function() {
+    //     assert.notEqual(account, account2, "didn't work :/")
+    //   });
+    // });
+
+
 
     // describe('changing addresses', function() {
     //
