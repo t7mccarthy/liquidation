@@ -155,7 +155,7 @@ contract Liquidation is SafeMath {
         emit Whitelist(_address);
     }
     //adding batches of address to the whitelist?
-    function whitelistAddress (address[] _addresses) public {
+    function addMultipleToWhitelist (address[] _addresses) public {
         for (uint i = 0; i < _addresses.length; i++) {
             whitelist[_addresses[i]] = true;
         }
@@ -186,7 +186,7 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Allows user to request a certain amount of tokens to liquidate
-    function requestWithdrawal(uint _tokensToWithdraw) external onlyWhitelist notHalted {
+    function requestWithdrawal(uint _tokensToWithdraw) external onlyWhitelist onlyPayloadSize(1) notHalted {
         require(_tokensToWithdraw > 0);
         require(getTokenBalance(msg.sender) >= _tokensToWithdraw);
         /* require(whitelist[msg.sender] == true); */
@@ -279,6 +279,10 @@ contract Liquidation is SafeMath {
     /// @notice Fund wallet can allow liquidation transactions to occur again
     function unhalt() external onlyFundWallet {
         halted = false;
+    }
+
+    function getContractBalance() external returns (uint) {
+      return this.balance;
     }
 
 }

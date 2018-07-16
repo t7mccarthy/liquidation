@@ -207,6 +207,7 @@ contract('Liquidation', function(accounts) {
         });
     });
 
+
     it("testing adding to whitelist", async function() {
       var liquidation;
       var controlWallet = accounts[7];
@@ -230,6 +231,35 @@ contract('Liquidation', function(accounts) {
         assert.notEqual(account, account2, "didn't work :/")
       });
     });
+
+    // describe('changing addresses', function() {
+    //
+    //   beforeEach(function(instance) {
+    //     liquidation = instance;
+    //     var fundWallet = accounts[8];
+    //     var newFundwallet;
+    //     var Liquidation =
+    //   });
+    //   it("fundWallet can be updated", function() {
+    //
+    //       return Liquidation.deployed().then(function(instance) {
+    //           liquidation = instance;
+    //       }).then(function() {
+    //           return liquidation.fundWallet();
+    //       }).then(function(result) {
+    //           return liquidation.changeFundWallet(accounts[7], {
+    //               from: accounts[8]
+    //           });
+    //       }).then(function() {
+    //           return liquidation.fundWallet();
+    //       }).then(function(result) {
+    //           newFundWallet = result;
+    //       }).then(function() {
+    //           assert.notEqual(fundWallet, newFundWallet, "Fund wallet was not updated");
+    //       });
+    //   });
+    //
+    // });
 
     it("fundWallet can be updated", function() {
         var liquidation;
