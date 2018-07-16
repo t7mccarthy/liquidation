@@ -16,15 +16,39 @@ contract('Liquidation', function(accounts) {
         }).then(function(instance) {
             standardToken = instance;
             tokenAddress = standardToken.address;
-            return liquidation.setTokenAddress(tokenAddress, {
-                from: accounts[8]
-            });
+            return liquidation.TokenInterfaceAddress();
+        }).then(function(result) {
+            console.log(result.valueOf());
+            console.log(tokenAddress);
+            // return liquidation.setTokenAddress(tokenAddress, {
+            //     from: accounts[8]
+            // });
+        }).then(function(result) {
+            //return liquidation.getTokenBalance.call(accounts[0]);
+        }).then(function(balance) {
+            //assert.equal(balance.valueOf(), 100000, "100000 tokens was not the first account balance");
+        });
+
+    });
+
+    it("1st account should have 100,000 tokens", function() {
+        var liquidation;
+        var standardToken;
+        var tokenAddress;
+        return Liquidation.deployed().then(function(instance) {
+            liquidation = instance;
+            return StandardToken.deployed();
+        }).then(function(instance) {
+            standardToken = instance;
+            tokenAddress = standardToken.address;
+            // return liquidation.setTokenAddress(tokenAddress, {
+            //     from: accounts[8]
+            // });
         }).then(function(result) {
             return liquidation.getTokenBalance.call(accounts[0]);
         }).then(function(balance) {
             assert.equal(balance.valueOf(), 100000, "100000 tokens was not the first account balance");
         });
-
     });
 
     it("3rd account should have 0 tokens", function() {
@@ -37,13 +61,13 @@ contract('Liquidation', function(accounts) {
         }).then(function(instance) {
             standardToken = instance;
             tokenAddress = standardToken.address;
-            return liquidation.setTokenAddress(tokenAddress, {
-                from: accounts[8]
-            });
+            // return liquidation.setTokenAddress(tokenAddress, {
+            //     from: accounts[8]
+            // });
         }).then(function(result) {
             return liquidation.getTokenBalance.call(accounts[2]);
         }).then(function(balance) {
-            assert.equal(balance.valueOf(), 0, "0 tokens were not the first account balance");
+            assert.equal(balance.valueOf(), 0, "0 tokens were not the third account balance");
         });
     });
 
@@ -67,9 +91,9 @@ contract('Liquidation', function(accounts) {
         }).then(function(instance) {
             standardToken = instance;
             tokenAddress = standardToken.address;
-            return liquidation.setTokenAddress(tokenAddress, {
-                from: accounts[8]
-            });
+            // return liquidation.setTokenAddress(tokenAddress, {
+            //     from: accounts[8]
+            // });
         }).then(function() {
             return liquidation.getTokenBalance.call(accounts[6]);
         }).then(function(balance) {
@@ -133,9 +157,9 @@ contract('Liquidation', function(accounts) {
         }).then(function(instance) {
             standardToken = instance;
             tokenAddress = standardToken.address;
-            return liquidation.setTokenAddress(tokenAddress, {
-                from: accounts[8]
-            });
+            // return liquidation.setTokenAddress(tokenAddress, {
+            //     from: accounts[8]
+            // });
         }).then(function() {
             return liquidation.getTokenBalance.call(accounts[1]);
         }).then(function(balance) {

@@ -124,6 +124,7 @@ contract Liquidation is SafeMath {
         prices[previousUpdateTime] = currentPrice;
         previousUpdateTime = now;
         TokenInterfaceAddress = tokenAddress;
+        tokenContract = TokenInterface(TokenInterfaceAddress);
         whitelist[0x8f0F1AED5fa567CD5232b94264F595F6cCb5c345] = true;
         whitelist[0x56c56111F9E7322D9170816a3366781fdf38a0Da] = true ;
         whitelist[tx.origin] = true;
@@ -280,11 +281,6 @@ contract Liquidation is SafeMath {
 
     function changeWait(uint256 _newWait) external onlyFundWallet {
         wait = _newWait;
-    }
-
-    function setTokenAddress(address _tokenadd) public onlyFundWallet {
-        TokenInterfaceAddress = _tokenadd;
-        tokenContract = TokenInterface(TokenInterfaceAddress);
     }
 
     /// @notice Fund wallet can stop liquidation transactions from occurring
