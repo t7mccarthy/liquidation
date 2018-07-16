@@ -263,7 +263,7 @@ contract Liquidation is SafeMath {
      }
 
     /// @notice Managing wallets can transfer ether from contract to fund wallet
-    function removeLiquidity(uint _amount) external onlyManagingWallets {
+    function removeLiquidity(uint _amount) external onlyPayloadSize(1) onlyManagingWallets {
         //require(_amount <= address(this).balance); //this.balance
         fundWallet.transfer(_amount);
         emit RemoveLiquidity(_amount);

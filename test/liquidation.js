@@ -314,8 +314,7 @@ contract('Liquidation', function(accounts) {
     //           assert.notEqual(fundWallet, newFundWallet, "Fund wallet was not updated");
     //       });
     //   });
-    //
-    // });
+
 
     it("fundWallet can be updated", function() {
         var liquidation;
