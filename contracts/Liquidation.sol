@@ -29,7 +29,7 @@ contract TokenInterface {
 
 
 /// @title ERC20 liquidation contract
-/// @author Tom McCarthy
+/// @author Tom McCarthy & Pascha Hao
 /// @notice Liquidates C20 tokens held by participants in the Cryto20 fund
 contract Liquidation is SafeMath {
     //using SafeMath for uint256;
@@ -79,6 +79,7 @@ contract Liquidation is SafeMath {
     event Withdraw(address indexed participant, uint256 amountTokens, uint256 etherAmount);
     event PriceUpdate(uint256 numerator, uint256 denominator);
     event Whitelist(address indexed participant);
+
 
     //MODIFIERS:
     modifier onlyFundWallet {
