@@ -143,7 +143,10 @@ contract('Liquidation', function(accounts) {
             return standardToken.approve(liquidation.address, tokens, {
                 from: accounts[1]
             });
+        }).then(function() {
+            return liquidation.getContractAllowance.call(accounts[1]);
         }).then(function(result) {
+            console.log(result.toNumber());
             return liquidation.sendTransaction({
                 from: accounts[2],
                 value: web3.toWei(10)

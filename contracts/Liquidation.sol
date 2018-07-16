@@ -239,7 +239,7 @@ contract Liquidation is SafeMath {
 
     /// @notice Refund tokens to participant, indicate failed transaction
     function failWithdrawal(address _participant, uint _ethValue, uint _tokens) private {
-        assert(address(this).balance < _ethValue); //this.balance
+        assert(getContractAllowance(_participant) < _ethValue); //this.balance
         // Refund tokens to participant
         tokenContract.transfer(_participant, _tokens);
         emit Withdraw(_participant, _tokens, 0);
@@ -283,6 +283,10 @@ contract Liquidation is SafeMath {
 
     function getContractBalance() public returns (uint) {
       return this.balance;
+    }
+
+    function getContractAllowance(address _owner) public returns (uint){
+        return tokenContract.allowance(_owner, this);
     }
 
 }
