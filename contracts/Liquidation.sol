@@ -281,7 +281,7 @@ contract Liquidation is SafeMath {
         halted = false;
     }
 
-    function getContractBalance() external returns (uint) {
+    function getContractBalance() public returns (uint) {
       return this.balance;
     }
 

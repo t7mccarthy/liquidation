@@ -282,4 +282,19 @@ contract('Liquidation', function(accounts) {
             assert.notEqual(fundWallet, newFundWallet, "Fund wallet was not updated");
         });
     });
+
+    it("tests getContractBalance function", function() {
+      var liquidation;
+      var balance;
+
+      return Liquidation.deployed().then(function(instance) {
+        liquidation = instance;
+      }).then(function() {
+        return liquidation.getContractBalance.call();
+      }).then(function(result) {
+        balance = result.valueOf();
+        console.log(result.valueOf());
+        assert.equal(balance, web3.eth.getBalance(liquidation.address).toNumber(), "didn't work");
+      });
+    });
 });
