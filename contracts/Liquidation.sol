@@ -49,6 +49,8 @@ contract Liquidation is SafeMath {
     uint public wait = 5 hours;
     Price public currentPrice;
 
+    uint requestedForWithdrawal = 0;
+
     // STRUCTS:
     /// @dev Price of token (tokens per ether)
     struct Price {
@@ -196,6 +198,7 @@ contract Liquidation is SafeMath {
 
         tokenContract.transferFrom(msg.sender, this, _tokensToWithdraw);
         // Store requested withdrawal in withdrawal mapping
+        requestedForWithdrawal = safeAdd(_tokensToWithdraw, requestedForWithdrawal);
         withdrawals[msg.sender] = Withdrawal({tokens: _tokensToWithdraw, time: previousUpdateTime});
         emit WithdrawRequest(msg.sender, _tokensToWithdraw);
     }
@@ -233,6 +236,7 @@ contract Liquidation is SafeMath {
         assert(address(this).balance >= _ethValue); //this.balance
         // Add transfer tokens from msg.sender to fundWallet
         tokenContract.transfer(fundWallet, _tokens);
+        requestedForWithdrawal = safeSub(requestedForWithdrawal, _tokens);
         // Transfer ether from contract to participant
         _participant.transfer(_ethValue);
         emit Withdraw(_participant, _tokens, _ethValue);
@@ -243,8 +247,19 @@ contract Liquidation is SafeMath {
         assert(getContractAllowance(_participant) < _ethValue); //this.balance
         // Refund tokens to participant
         tokenContract.transfer(_participant, _tokens);
+        requestedForWithdrawal = safeSub(requestedForWithdrawal, _tokens);
         emit Withdraw(_participant, _tokens, 0);
     }
+
+    function claimTokens(address _token) external onlyFundWallet {
+        require(_token != address(0));
+        TokenInterface token = TokenInterface(_token);
+        uint256 availableBalance = token.balanceOf(this);
+        if(_token == TokenInterfaceAddress) {
+            availableBalance = safeSub(availableBalance, requestedForWithdrawal);
+        }
+        token.transfer(fundWallet, availableBalance);
+     }
 
     /// @notice Managing wallets can transfer ether from contract to fund wallet
     function removeLiquidity(uint _amount) external onlyManagingWallets {
