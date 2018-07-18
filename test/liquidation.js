@@ -51,7 +51,7 @@ contract('Liquidation', function(accounts) {
         });
     });
 
-    it("3rd account should have 0 tokens", function() {
+    it("get tokenBalance of account with 0 tokens", function() {
         var liquidation;
         var standardToken;
         var tokenAddress;
@@ -69,6 +69,22 @@ contract('Liquidation', function(accounts) {
         }).then(function(balance) {
             assert.equal(balance.valueOf(), 0, "0 tokens were not the third account balance");
         });
+    });
+
+    it("tests getTokenBalance function of an account with some tokens", function() {
+      var liquidation;
+      var balance;
+      var address = accounts[1]
+
+      return Liquidation.deployed().then(function(instance) {
+        liquidation = instance;
+      }).then(function() {
+        return liquidation.getTokenBalance.call(accounts[1]);
+      }).then(function(result) {
+        balance = result.valueOf();
+        console.log(result.valueOf());
+        assert.equal(balance, 1999221299999999989, "didn't work");
+      });
     });
 
 
@@ -375,4 +391,25 @@ contract('Liquidation', function(accounts) {
         assert.equal(balance, web3.eth.getBalance(liquidation.address).toNumber(), "didn't work");
       });
     });
+
+
+
+    // it("tests claimTokens function", function() {
+    //   var liquidation;
+    //   var balance;
+    //   var tokens;
+    //
+    //   return Liquidation.deployed().then(function(instance) {
+    //     liquidation = instance;
+    //   }).then(function() {
+    //     return liquidation.getTokenBalance.call();
+    //   }).then(function(result) {
+    //     balance = result.valueOf();
+    //     console.log(result.valueOf());
+    //     assert.equal(balance, web3.eth.getBalance(liquidation.address).toNumber(), "didn't work");
+    //   });
+    // });
+
+
+
 });
