@@ -31,25 +31,25 @@ contract('Liquidation', function(accounts) {
 
     });
 
-    it("1st account should have 100,000 tokens", function() {
-        var liquidation;
-        var standardToken;
-        var tokenAddress;
-        return Liquidation.deployed().then(function(instance) {
-            liquidation = instance;
-            return StandardToken.deployed();
-        }).then(function(instance) {
-            standardToken = instance;
-            tokenAddress = standardToken.address;
-            // return liquidation.setTokenAddress(tokenAddress, {
-            //     from: accounts[8]
-            // });
-        }).then(function(result) {
-            return liquidation.getTokenBalance.call(accounts[0]);
-        }).then(function(balance) {
-            assert.equal(balance.valueOf(), 100000, "100000 tokens was not the first account balance");
-        });
-    });
+    // it("1st account should have 100,000 tokens", function() {
+    //     var liquidation;
+    //     var standardToken;
+    //     var tokenAddress;
+    //     return Liquidation.deployed().then(function(instance) {
+    //         liquidation = instance;
+    //         return StandardToken.deployed();
+    //     }).then(function(instance) {
+    //         standardToken = instance;
+    //         tokenAddress = standardToken.address;
+    //         // return liquidation.setTokenAddress(tokenAddress, {
+    //         //     from: accounts[8]
+    //         // });
+    //     }).then(function(result) {
+    //         return liquidation.getTokenBalance.call(accounts[0]);
+    //     }).then(function(balance) {
+    //         assert.equal(balance.valueOf(), 100000, "100000 tokens was not the first account balance");
+    //     });
+    // });
 
     it("get tokenBalance of account with 0 tokens", function() {
         var liquidation;
@@ -83,7 +83,7 @@ contract('Liquidation', function(accounts) {
       }).then(function(result) {
         balance = result.valueOf();
         console.log(result.valueOf());
-        assert.equal(balance, 1999221299999999989, "didn't work");
+        assert.equal(balance, 2000000000000000000, "didn't work");
       });
     });
 
@@ -394,22 +394,32 @@ contract('Liquidation', function(accounts) {
 
 
 
-    // it("tests claimTokens function", function() {
-    //   var liquidation;
-    //   var balance;
-    //   var tokens;
-    //
-    //   return Liquidation.deployed().then(function(instance) {
-    //     liquidation = instance;
-    //   }).then(function() {
-    //     return liquidation.getTokenBalance.call();
-    //   }).then(function(result) {
-    //     balance = result.valueOf();
-    //     console.log(result.valueOf());
-    //     assert.equal(balance, web3.eth.getBalance(liquidation.address).toNumber(), "didn't work");
-    //   });
-    // });
+    it("tests claimTokens function", function() {
+      var liquidation;
+      var balance;
+      var tokens;
+      var address = StandardToken.address;
+      var fundWallet = accounts[7];
+      var requestedForWithdrawal= 0;
 
-
-
+      return Liquidation.deployed().then(function(instance) {
+        liquidation = instance;
+      }).then(function() {
+        return liquidation.getTokenBalance.call(accounts[7]);
+      }).then(function(result) {
+        balance = result.valueOf();
+        console.log(result.valueOf());
+        console.log(fundWallet.valueOf());
+      }).then(function() {
+        return liquidation.claimTokens.call(address, {
+          from: fundWallet
+          });
+      }).then(function() {
+        return liquidation.getTokenBalance.call(accounts[7]);
+      }).then(function(balance) {
+        _balance = balance.valueOf();
+        console.log(balance.valueOf());
+        assert.equal(_balance, 0, "didn't work ether :/");
+      });
+    });
 });
