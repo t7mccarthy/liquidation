@@ -232,7 +232,6 @@ contract Liquidation is SafeMath {
     }
 
     /// @notice Add tokens to fund wallet, transfer correstponding ether to participant
-    // TODO:  onlyPayloadSize
     function doWithdrawal(address _participant, uint _ethValue, uint _tokens) private {
         assert(address(this).balance >= _ethValue); //this.balance
         // Add transfer tokens from msg.sender to fundWallet

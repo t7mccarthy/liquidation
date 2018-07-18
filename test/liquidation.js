@@ -338,6 +338,29 @@ contract('Liquidation', function(accounts) {
         });
     });
 
+    it("controlWallet can be updated", function() {
+        var liquidation;
+        var controlWallet = accounts[9];
+        var fundWallet = accounts[7];
+        var newControlWallet;
+
+        return Liquidation.deployed().then(function(instance) {
+            liquidation = instance;
+        }).then(function() {
+            return liquidation.controlWallet();
+        }).then(function(result) {
+            return liquidation.changeControlWallet(accounts[5], {
+                from: fundWallet
+            });
+        }).then(function() {
+            return liquidation.controlWallet();
+        }).then(function(result) {
+            newControlWallet = result;
+        }).then(function() {
+            assert.notEqual(controlWallet, newControlWallet, "Control wallet was not updated");
+        });
+    });
+
     it("tests getContractBalance function", function() {
       var liquidation;
       var balance;
