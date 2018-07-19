@@ -1,5 +1,6 @@
 var Liquidation = artifacts.require("./Liquidation.sol");
 var StandardToken = artifacts.require("./StandardToken.sol");
+var StandardTokenMock = artifacts.require('./helpers/StandardTokenMock.sol');
 
 contract('Liquidation', function(accounts) {
 
@@ -9,6 +10,7 @@ contract('Liquidation', function(accounts) {
         var liquidation;
         var standardToken;
         var tokenAddress;
+        var user1 = accounts[1];
 
         return Liquidation.deployed().then(function(instance) {
             liquidation = instance;
@@ -392,24 +394,60 @@ contract('Liquidation', function(accounts) {
       });
     });
 
+    describe('claimToken function', function() {
+
+      let erc20Token;
+
+      // beforeEach(async function() {
+      //   var fundWallet = accounts[7];
+      //   erc20Token = await StandardTokenMock.new(fundWallet, 100);
+      //   // create erc20token with 100 tokens
+      // });
+
+      it('should allow fundwallet to reclaim random erc20token', async function() {
+        var fundWallet = accounts[7];
+        var erc20Token = await StandardTokenMock.new(fundWallet, 100);
+
+        return Liquidation.deployed().then(function(instance) {
+          liquidation = instance;
+        }).then(async function() {
+          return erc20Token.transfer(Liquidation.address, 50, {from: accounts[0]});
+        }).then(async function() {
+          return liquidation.claimTokens(erc20Token.address);
+        }).then(async function(fundWalletTokenBal) {
+          fundWalletTokenBal = await erc20Token.balanceOf(fundWallet);
+          assert.equal(fundWalletTokenBal, 50);
+        });
+      });
 
 
-    it("tests claimTokens function", function() {
+    it("tests claimTokens function", async function() {
       var liquidation;
       var balance;
       var tokens;
       var address = StandardToken.address;
       var fundWallet = accounts[7];
       var requestedForWithdrawal= 0;
+      var erc20Token = await StandardTokenMock.new(fundWallet, 100);
+
 
       return Liquidation.deployed().then(function(instance) {
         liquidation = instance;
+      }).then(function() {
+        return erc20Token.transfer(Liquidation.address, 50, {from:accounts[0]});
       }).then(function() {
         return liquidation.getTokenBalance.call(accounts[7]);
       }).then(function(result) {
         balance = result.valueOf();
         console.log(result.valueOf());
         console.log(fundWallet.valueOf());
+      }).then(function() {
+        return StandardToken.transfer(StandardToken.address , 10000);
+      }).then(function() {
+        return liquidation.getContractBalance.call();
+      }).then(function(balance5) {
+        _balance5 = balance5;
+        console.log(_balance5);
       }).then(function() {
         return liquidation.claimTokens.call(address, {
           from: fundWallet
